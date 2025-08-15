@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text } from 'react-native';
+import { Text, Image, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -15,6 +15,19 @@ import LoginScreen from '../modules/authentication/components/LoginScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Header Logo Component
+function HeaderLogo() {
+  return (
+    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      <Image 
+        source={require('../shared/img/logo-roxana-blanco.png')}
+        style={{ width: 120, height: 40 }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
 
 // Main Tab Navigator
 function MainTabNavigator() {
@@ -38,6 +51,7 @@ function MainTabNavigator() {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerTitle: () => <HeaderLogo />,
       }}
     >
       <Tab.Screen 
