@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
 
 // Import screens
 import DashboardScreen from '../modules/dashboard/components/DashboardScreen';
@@ -69,7 +70,7 @@ function MainTabNavigator() {
         options={{
           title: 'Inicio',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>🏠</Text>
+            <AntDesign name="home" size={size} color={color} />
           ),
         }}
       />
@@ -79,7 +80,7 @@ function MainTabNavigator() {
         options={{
           title: 'Viajes',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>✈️</Text>
+            <SimpleLineIcons name="plane" size={size} color={color} />
           ),
         }}
       />
@@ -89,7 +90,7 @@ function MainTabNavigator() {
         options={{
           title: 'Ubicación',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>📍</Text>
+            <AntDesign name="enviromento" size={size} color={color} />
           ),
         }}
       />
@@ -99,7 +100,7 @@ function MainTabNavigator() {
         options={{
           title: 'Pagos',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>💳</Text>
+            <AntDesign name="creditcard" size={size} color={color} />
           ),
         }}
       />
@@ -109,7 +110,7 @@ function MainTabNavigator() {
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>👤</Text>
+            <AntDesign name="user" size={size} color={color} />
           ),
         }}
       />
