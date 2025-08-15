@@ -16,10 +16,15 @@ import LoginScreen from '../modules/authentication/components/LoginScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Header Logo Component
+// Header Logo Component - CENTRADO
 function HeaderLogo() {
   return (
-    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+    <View style={{ 
+      flex: 1,
+      width: '100%',
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}>
       <Image 
         source={require('../shared/img/logo-roxana-blanco.png')}
         style={{ width: 120, height: 40 }}
@@ -52,6 +57,7 @@ function MainTabNavigator() {
           fontWeight: 'bold',
         },
         headerTitle: () => <HeaderLogo />,
+        headerTitleAlign: 'center', // Asegura el centrado
       }}
     >
       <Tab.Screen 
@@ -110,9 +116,7 @@ function MainTabNavigator() {
 
 // Root Stack Navigator (for authentication flow)
 function AppNavigator() {
-  // For now, we'll go directly to the main app
-  // Later you can add authentication logic here
-  const isAuthenticated = true; // This should come from your auth state
+  const isAuthenticated = true;
 
   return (
     <NavigationContainer>
