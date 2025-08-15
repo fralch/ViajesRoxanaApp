@@ -1,206 +1,231 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  SafeAreaView,
+  ScrollView 
+} from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+// --- Constants for Design System ---
+// Using constants makes the design consistent and easy to update.
+const COLORS = {
+  primary: '#d62d28',
+  white: '#fff',
+  textPrimary: '#333',
+  textSecondary: '#666',
+  textMuted: '#999',
+  background: '#fff',
+  lightGray: '#e3f2fd',
+  border: '#d62d28',
+};
+
+const SPACING = {
+  small: 8,
+  medium: 16,
+  large: 24,
+  xlarge: 32,
+};
+
+const FONT_SIZES = {
+  xsmall: 12,
+  small: 14,
+  medium: 16,
+  large: 18,
+  xlarge: 24,
+  xxlarge: 32,
+};
+
+// --- Reusable Feature Item Component ---
+// Creating a separate component makes the main code cleaner and promotes reuse.
+interface FeatureItemProps {
+  icon: string;
+  text: string;
+}
+
+const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => (
+  <View style={styles.featureItem}>
+    <Text style={styles.featureIcon}>{icon}</Text>
+    <Text style={styles.featureText}>{text}</Text>
+  </View>
+);
+
+// --- Data for Features ---
+// Separating data from presentation is a good practice.
+const features = [
+  { icon: '📍', text: 'Ubicación en tiempo real' },
+  { icon: '🏥', text: 'Información médica segura' },
+  { icon: '💳', text: 'Gestión de pagos' },
+  { icon: '📱', text: 'Notificaciones instantáneas' },
+];
 
 const WelcomeScreen = () => {
   return (
-    <View style={styles.container}>
-      {/* Logo/Image Section */}
-      <View style={styles.imageContainer}>
-        <View style={styles.logoPlaceholder}>
-          <Text style={styles.logoText}>🎒</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        {/* Logo/Header Section */}
+        <View style={styles.headerContainer}>
+          <View style={styles.logoPlaceholder}>
+            <Text style={styles.logoText}>🎒</Text>
+          </View>
+          <Text style={styles.appName}>ViajesRoxana</Text>
+          <Text style={styles.tagline}>Tu compañero de aventuras escolares</Text>
         </View>
-        <Text style={styles.appName}>ViajesRoxana</Text>
-        <Text style={styles.tagline}>Tu compañero de aventuras escolares</Text>
-      </View>
 
-      {/* Welcome Content */}
-      <View style={styles.contentContainer}>
-        <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
-        <Text style={styles.welcomeDescription}>
-          Mantente conectado con tus hijos durante sus viajes escolares. 
-          Recibe actualizaciones en tiempo real y accede a toda la información importante.
-        </Text>
-
-        {/* Features List */}
-        <View style={styles.featuresList}>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>📍</Text>
-            <Text style={styles.featureText}>Ubicación en tiempo real</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>🏥</Text>
-            <Text style={styles.featureText}>Información médica segura</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>💳</Text>
-            <Text style={styles.featureText}>Gestión de pagos</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>📱</Text>
-            <Text style={styles.featureText}>Notificaciones instantáneas</Text>
-          </View>
+        {/* Welcome Content */}
+        <View style={styles.contentContainer}>
+          <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
+          <Text style={styles.welcomeDescription}>
+            Mantente conectado con tus hijos durante sus viajes escolares. Recibe actualizaciones y accede a toda la información importante.
+          </Text>
+          
+          {/* Features List - Now dynamically rendered */}
+          {features.map((feature, index) => (
+            <FeatureItem key={index} icon={feature.icon} text={feature.text} />
+          ))}
         </View>
-      </View>
+      </ScrollView>
 
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.loginButton}>
-          <Text style={styles.loginButtonText}>Iniciar Sesión</Text>
+      {/* Action Buttons & Footer */}
+      <View style={styles.footerContainer}>
+        <TouchableOpacity style={[styles.button, styles.primaryButton]}>
+          <Text style={[styles.buttonText, styles.primaryButtonText]}>Iniciar Sesión</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.registerButton}>
-          <Text style={styles.registerButtonText}>Crear Cuenta</Text>
+        <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
+          <Text style={[styles.buttonText, styles.secondaryButtonText]}>Crear Cuenta</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.skipButton}>
+        <TouchableOpacity>
           <Text style={styles.skipButtonText}>Explorar como invitado</Text>
         </TouchableOpacity>
-      </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
         <Text style={styles.footerText}>
-          Al continuar, aceptas nuestros {' '}
-          <Text style={styles.linkText}>Términos de Servicio</Text>
-          {' '} y {' '}
+          Al continuar, aceptas nuestros{' '}
+          <Text style={styles.linkText}>Términos de Servicio</Text> y{' '}
           <Text style={styles.linkText}>Política de Privacidad</Text>
         </Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
+    backgroundColor: COLORS.background,
   },
-  imageContainer: {
-    flex: 0.4,
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
+    padding: SPACING.large,
+  },
+  // --- Header ---
+  headerContainer: {
     alignItems: 'center',
-    paddingTop: 60,
+    marginBottom: SPACING.xlarge,
   },
   logoPlaceholder: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#e3f2fd',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: SPACING.medium,
   },
   logoText: {
-    fontSize: 48,
+    fontSize: 40,
   },
   appName: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#d62d28',
-    marginBottom: 8,
+    fontSize: FONT_SIZES.xxlarge,
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   tagline: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
+    fontSize: FONT_SIZES.medium,
+    color: COLORS.textSecondary,
+    marginTop: SPACING.small / 2,
   },
+  // --- Main Content ---
   contentContainer: {
-    flex: 0.45,
-    justifyContent: 'center',
+    marginBottom: SPACING.xlarge,
   },
   welcomeTitle: {
-    fontSize: 24,
+    fontSize: FONT_SIZES.xlarge,
     fontWeight: 'bold',
-    color: '#333',
+    color: COLORS.textPrimary,
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: SPACING.medium,
   },
   welcomeDescription: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: FONT_SIZES.medium,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 32,
-    paddingHorizontal: 20,
+    marginBottom: SPACING.large,
   },
-  featuresList: {
-    paddingHorizontal: 20,
-  },
+  // --- Feature Item ---
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingVertical: 8,
+    marginBottom: SPACING.medium,
   },
   featureIcon: {
-    fontSize: 24,
-    marginRight: 16,
-    width: 32,
+    fontSize: FONT_SIZES.xlarge,
+    marginRight: SPACING.medium,
   },
   featureText: {
-    fontSize: 16,
-    color: '#333',
-    flex: 1,
+    fontSize: FONT_SIZES.medium,
+    color: COLORS.textPrimary,
+    flex: 1, // Allows text to wrap
   },
-  actionsContainer: {
-    flex: 0.3,
-    justifyContent: 'center',
-    paddingVertical: 20,
+  // --- Footer & Actions ---
+  footerContainer: {
+    padding: SPACING.large,
+    paddingTop: SPACING.medium,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
-  loginButton: {
-    backgroundColor: '#d62d28',
-    paddingVertical: 16,
+  button: {
+    paddingVertical: SPACING.medium,
     borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    marginBottom: SPACING.medium,
+    alignItems: 'center',
   },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  primaryButton: {
+    backgroundColor: COLORS.primary,
   },
-  registerButton: {
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#d62d28',
-    marginBottom: 12,
+  secondaryButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
   },
-  registerButtonText: {
-    color: '#d62d28',
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  buttonText: {
+    fontSize: FONT_SIZES.large,
+    fontWeight: '600',
   },
-  skipButton: {
-    paddingVertical: 12,
+  primaryButtonText: {
+    color: COLORS.white,
+  },
+  secondaryButtonText: {
+    color: COLORS.primary,
   },
   skipButtonText: {
-    color: '#666',
-    fontSize: 16,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-  },
-  footer: {
-    paddingVertical: 20,
-    paddingHorizontal: 20,
+    fontSize: FONT_SIZES.small,
+    marginBottom: SPACING.large,
   },
   footerText: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: FONT_SIZES.xsmall,
+    color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 18,
   },
   linkText: {
-    color: '#d62d28',
+    color: COLORS.primary,
     textDecorationLine: 'underline',
   },
 });
