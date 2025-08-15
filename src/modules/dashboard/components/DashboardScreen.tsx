@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import {FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 
 const DashboardScreen = () => {
   const userName = "Ana García";
@@ -17,11 +18,12 @@ const DashboardScreen = () => {
   ];
 
   const quickActions = [
-    { id: 1, title: "Ver Ubicación", icon: "📍", screen: "Location" },
-    { id: 2, title: "Perfil Médico", icon: "🏥", screen: "Profile" },
-    { id: 3, title: "Pagos", icon: "💳", screen: "Payments" },
-    { id: 4, title: "Equipaje", icon: "🧳", screen: "Luggage" }
+    { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, screen: "Location" },
+    { id: 2, title: "Perfil Médico", icon: <FontAwesome6 name="briefcase-medical" size={28} color="#d62d28" />, screen: "Profile" },
+    { id: 3, title: "Pagos", icon: <FontAwesome6 name="credit-card" size={28} color="#d62d28" />, screen: "Payments" },
+    { id: 4, title: "Equipaje", icon: <FontAwesome6 name="suitcase-rolling" size={28} color="#d62d28" />, screen: "Luggage" }
   ];
+
 
   return (
     <ScrollView style={styles.container}>
@@ -32,7 +34,7 @@ const DashboardScreen = () => {
           <Text style={styles.subGreeting}>Bienvenida de vuelta</Text>
         </View>
         <TouchableOpacity style={styles.profileButton}>
-          <Text style={styles.profileIcon}>👤</Text>
+         <FontAwesome name="user" size={25} color="#d62d28" />
         </TouchableOpacity>
       </View>
 
@@ -123,13 +125,11 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#fde3e3',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profileIcon: {
-    fontSize: 24,
-  },
+
   tripCard: {
     backgroundColor: '#fff',
     marginHorizontal: 20,
@@ -211,7 +211,6 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   actionIcon: {
-    fontSize: 32,
     marginBottom: 8,
   },
   actionTitle: {
