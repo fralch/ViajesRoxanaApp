@@ -1,0 +1,543 @@
+{
+  "appArchitecture": {
+    "appName": "ViajesRoxana",
+    "version": "2.0.0",
+    "lastUpdated": "2025-01-15",
+    "projectStructure": {
+      "type": "modular",
+      "framework": "React Native + TypeScript",
+      "architecture": "feature-based modules"
+    },
+    "navigation": {
+      "type": "stack",
+      "initialRoute": "Auth"
+    },
+    "fileStructure": {
+      "src": {
+        "modules": {
+          "authentication": {
+            "path": "src/modules/authentication",
+            "components": ["WelcomeScreen", "LoginScreen", "ForgotPasswordScreen", "ResetConfirmationScreen", "RegisterScreen"],
+            "hooks": ["useAuth", "useLogin", "useRegister"],
+            "services": ["authService", "tokenService"],
+            "types": ["AuthUser", "LoginCredentials", "RegisterData"]
+          },
+          "dashboard": {
+            "path": "src/modules/dashboard",
+            "components": ["DashboardScreen"],
+            "hooks": ["useDashboard"],
+            "services": ["dashboardService"],
+            "types": ["DashboardData", "Notification", "QuickAction"]
+          },
+          "profile": {
+            "path": "src/modules/profile",
+            "components": ["ProfileMainScreen", "PersonalDataScreen", "MedicalRecordScreen", "NutritionalRecordScreen"],
+            "hooks": ["useProfile", "usePersonalData", "useMedicalRecord"],
+            "services": ["profileService", "nfcService"],
+            "types": ["ProfileData", "PersonalData", "MedicalData", "NutritionalData", "EmergencyContact"]
+          },
+          "trips": {
+            "path": "src/modules/trips",
+            "components": ["TripsListScreen", "TripDetailsScreen", "ItineraryScreen", "DocumentsScreen", "PhotosVideosScreen", "RecommendationsScreen"],
+            "hooks": ["useTrips", "useTripDetails", "useItinerary"],
+            "services": ["tripsService", "documentsService"],
+            "types": ["Trip", "TripDay", "TripActivity", "TripDocument", "TripMedia", "TripRecommendations"]
+          },
+          "payments": {
+            "path": "src/modules/payments",
+            "components": ["PaymentsListScreen", "PaymentDetailsScreen", "PaymentScheduleScreen", "PaymentHistoryScreen", "RegisterPaymentScreen"],
+            "hooks": ["usePayments", "usePaymentDetails"],
+            "services": ["paymentsService", "installmentsService"],
+            "types": ["Payment", "PaymentInstallment", "PaymentSummary"]
+          },
+          "location": {
+            "path": "src/modules/location",
+            "components": ["LiveLocationScreen", "ActivityHistoryScreen", "ScheduleScreen"],
+            "hooks": ["useLocation", "useGeolocation", "useLocationTracking"],
+            "services": ["locationService", "gpsService", "emergencyService"],
+            "types": ["LocationData", "LiveLocationData", "RecentActivity", "EmergencyContact"]
+          },
+          "luggage": {
+            "path": "src/modules/luggage",
+            "components": ["LuggageListScreen", "AddLuggageScreen", "LuggageDetailsScreen", "LuggageRegulationsScreen"],
+            "hooks": ["useLuggage", "useLuggagePhotos"],
+            "services": ["luggageService", "photoService"],
+            "types": ["Luggage", "LuggagePhoto", "LuggageRegulation"]
+          },
+          "notifications": {
+            "path": "src/modules/notifications",
+            "components": ["NotificationsListScreen", "NotificationDetailsScreen"],
+            "hooks": ["useNotifications", "usePushNotifications"],
+            "services": ["notificationsService", "pushService"],
+            "types": ["PushNotification", "NotificationSettings"]
+          },
+          "contact": {
+            "path": "src/modules/contact",
+            "components": ["ContactInfoScreen"],
+            "hooks": ["useContacts"],
+            "services": ["contactService"],
+            "types": ["ContactInfo"]
+          }
+        },
+        "shared": {
+          "path": "src/shared",
+          "components": ["LoadingSpinner", "EmptyState", "ErrorBoundary", "CustomButton", "CustomInput", "StatusBadge", "ProgressBar", "Card", "Avatar", "TabBar"],
+          "hooks": ["useApi", "useStorage", "useValidation", "usePermissions"],
+          "services": ["apiService", "storageService", "validationService", "permissionsService"],
+          "utils": ["formatDate", "formatCurrency", "formatPhoneNumber", "validateEmail", "validatePhone", "calculateDistance", "getTimeDifference"],
+          "types": ["BaseEntity", "User", "ApiResponse", "PaginatedResponse", "ScreenProps", "ValidationError", "FormState", "AppSettings"]
+        },
+        "navigation": {
+          "path": "src/navigation",
+          "files": ["RootNavigator", "AuthNavigator", "MainNavigator", "DrawerNavigator"],
+          "types": ["RootStackParamList", "MainDrawerParamList"]
+        }
+      }
+    },
+    "modules": {
+      "authentication": {
+        "stackName": "AuthStack",
+        "initialRoute": "Welcome",
+        "screens": {
+          "Welcome": {
+            "component": "WelcomeScreen",
+            "path": "src/modules/authentication/components/WelcomeScreen.tsx",
+            "implemented": true,
+            "features": ["appIntro", "featureHighlights", "guestMode"],
+            "navigation": ["Login", "Register"]
+          },
+          "Login": {
+            "component": "LoginScreen",
+            "path": "src/modules/authentication/components/LoginScreen.tsx",
+            "implemented": true,
+            "fields": ["email_phone", "password"],
+            "actions": ["login", "forgotPassword", "biometricLogin"],
+            "features": ["passwordVisibility", "formValidation", "biometricSupport", "emergencyAccess"],
+            "navigation": ["Main", "ForgotPassword", "Register"]
+          },
+          "ForgotPassword": {
+            "component": "ForgotPasswordScreen",
+            "fields": ["email"],
+            "actions": ["sendResetLink"],
+            "navigation": ["Login", "ResetConfirmation"]
+          },
+          "ResetConfirmation": {
+            "component": "ResetConfirmationScreen",
+            "navigation": ["Login"]
+          },
+          "Register": {
+            "component": "RegisterScreen",
+            "userTypes": ["student", "guardian"],
+            "steps": {
+              "step1": {
+                "title": "Datos del Apoderado",
+                "fields": ["guardian_name", "guardian_lastname", "address", "district", "province", "department", "phone"]
+              },
+              "step2": {
+                "title": "Datos del Alumno",
+                "fields": ["student_name", "student_lastname"]
+              },
+              "step3": {
+                "title": "Documentos del Alumno",
+                "fields": ["document_type", "document_number"]
+              },
+              "step4": {
+                "title": "Credenciales y Términos",
+                "fields": ["email", "password", "confirm_password", "accept_terms", "accept_privacy", "accept_promotions"]
+              }
+            },
+            "navigation": ["Login", "Main"]
+          }
+        }
+      },
+      "main": {
+        "stackName": "MainStack",
+        "type": "drawer",
+        "initialRoute": "Dashboard",
+        "screens": {
+          "Dashboard": {
+            "component": "DashboardScreen",
+            "path": "src/modules/dashboard/components/DashboardScreen.tsx",
+            "implemented": true,
+            "features": ["notifications", "quickAccess", "userGreeting", "currentTrip", "progressTracking"],
+            "navigation": ["Profile", "Trips", "Luggage", "Payments", "Location", "Contact", "FAQ", "Tutorials", "Notifications"]
+          }
+        },
+        "drawer": {
+          "Profile": {
+            "stackName": "ProfileStack",
+            "initialRoute": "ProfileMain"
+          },
+          "Trips": {
+            "stackName": "TripsStack",
+            "initialRoute": "TripsList"
+          },
+          "Luggage": {
+            "stackName": "LuggageStack",
+            "initialRoute": "LuggageList"
+          },
+          "Payments": {
+            "stackName": "PaymentsStack",
+            "initialRoute": "PaymentsList"
+          },
+          "Location": {
+            "stackName": "LocationStack",
+            "initialRoute": "LiveLocation"
+          },
+          "Contact": {
+            "stackName": "ContactStack",
+            "initialRoute": "ContactInfo"
+          },
+          "FAQ": {
+            "stackName": "FAQStack",
+            "initialRoute": "FAQList"
+          },
+          "Tutorials": {
+            "stackName": "TutorialsStack",
+            "initialRoute": "TutorialsList"
+          },
+          "Notifications": {
+            "stackName": "NotificationsStack",
+            "initialRoute": "NotificationsList"
+          }
+        }
+      },
+      "profile": {
+        "stackName": "ProfileStack",
+        "initialRoute": "ProfileMain",
+        "screens": {
+          "ProfileMain": {
+            "component": "ProfileMainScreen",
+            "path": "src/modules/profile/components/ProfileMainScreen.tsx",
+            "implemented": true,
+            "sections": ["personal_data", "medical_record", "nutritional_record"],
+            "completionPercentage": true,
+            "nfcIntegration": true,
+            "features": ["progressTracking", "nfcSync", "photoManagement", "quickActions"],
+            "navigation": ["PersonalData", "MedicalRecord", "NutritionalRecord"]
+          },
+          "PersonalData": {
+            "component": "PersonalDataScreen",
+            "path": "src/modules/profile/components/PersonalDataScreen.tsx",
+            "tabs": ["personal_info", "emergency_contact", "about_me"],
+            "implemented": true,
+            "features": ["photoUpload", "multipleContacts", "formValidation"],
+            "screens": {
+              "PersonalInfo": {
+                "fields": ["name", "lastname", "photo", "document_type", "document_number", "age", "birth_date", "gender", "address", "email", "phone", "country"],
+                "actions": ["save", "changePhoto", "deletePhoto"]
+              },
+              "EmergencyContact": {
+                "fields": ["contact_name", "contact_lastname", "contact_phone"],
+                "actions": ["save", "addNewContact"],
+                "maxContacts": 3
+              },
+              "AboutMe": {
+                "fields": ["hobbies", "sports", "relational_attitude", "additional_info"],
+                "actions": ["save"],
+                "optional": true
+              }
+            }
+          },
+          "MedicalRecord": {
+            "component": "MedicalRecordScreen",
+            "tabs": ["health_info", "immunizations", "health_details", "insurance_cards"],
+            "screens": {
+              "HealthInfo": {
+                "fields": ["blood_type", "rh_factor", "current_treatment", "preexisting_conditions", "medication_allergies", "additional_allergies", "treatment_observations", "medication_name", "medication_provider", "daily_dose"],
+                "actions": ["save"]
+              },
+              "Immunizations": {
+                "vaccines": ["tetanus", "rubella", "hepatitis_b", "measles", "influenza", "yellow_fever", "tuberculosis", "covid", "other"],
+                "fields": ["additional_vaccines", "side_effects", "additional_comments"],
+                "actions": ["save"]
+              },
+              "HealthDetails": {
+                "fields": ["additional_information"],
+                "actions": ["save"],
+                "optional": true
+              },
+              "InsuranceCards": {
+                "fields": ["travel_insurance", "private_insurance", "medical_history", "emotional_health_history"],
+                "actions": ["save", "uploadDocument", "changeDocument", "deleteDocument"]
+              }
+            }
+          },
+          "NutritionalRecord": {
+            "component": "NutritionalRecordScreen",
+            "fields": ["weight", "height", "physical_activity", "diet_type", "food_allergies", "eating_habits", "special_diet", "foods_not_consumed", "allergy_details", "habit_details", "diet_details", "nutrition_details", "foods_avoided_details"],
+            "actions": ["save"]
+          }
+        }
+      },
+      "trips": {
+        "stackName": "TripsStack",
+        "initialRoute": "TripsList",
+        "screens": {
+          "TripsList": {
+            "component": "TripsListScreen",
+            "path": "src/modules/trips/components/TripsListScreen.tsx",
+            "implemented": true,
+            "filters": ["active", "upcoming", "completed"],
+            "tripCategories": ["current", "past"],
+            "features": ["statusFiltering", "progressBars", "nextActivityDisplay", "contactInfo"],
+            "navigation": ["TripDetails"]
+          },
+          "TripDetails": {
+            "component": "TripDetailsScreen",
+            "path": "src/modules/trips/components/TripDetailsScreen.tsx",
+            "implemented": true,
+            "sections": ["overview", "itinerary", "documents", "photos_videos", "recommendations"],
+            "tripInfo": ["destination", "group", "responsible", "phone", "date", "code"],
+            "features": ["tabNavigation", "progressTracking", "mediaGallery", "documentDownload", "quickActions"],
+            "navigation": ["Itinerary", "Documents", "PhotosVideos", "Recommendations"]
+          },
+          "Itinerary": {
+            "component": "ItineraryScreen",
+            "features": ["dailySchedule", "activities", "locations"],
+            "actions": ["viewDetails", "downloadPDF"]
+          },
+          "Documents": {
+            "component": "DocumentsScreen",
+            "documentTypes": ["medical_assistance_card", "recommendations", "clothing_list", "notarial_permission", "medical_voucher", "nearby_clinics"],
+            "actions": ["view", "download"],
+            "availability": "dynamic"
+          },
+          "PhotosVideos": {
+            "component": "PhotosVideosScreen",
+            "features": ["gallery", "videos", "youtube_links"],
+            "status": "available_during_trip"
+          },
+          "Recommendations": {
+            "component": "RecommendationsScreen",
+            "types": ["general", "clothing", "health", "documentation"],
+            "actions": ["view", "download"]
+          }
+        }
+      },
+      "payments": {
+        "stackName": "PaymentsStack",
+        "initialRoute": "PaymentsList",
+        "screens": {
+          "PaymentsList": {
+            "component": "PaymentsListScreen",
+            "path": "src/modules/payments/components/PaymentsListScreen.tsx",
+            "implemented": true,
+            "sections": ["payment_status", "schedule", "history"],
+            "filters": ["year", "trip", "status"],
+            "features": ["yearFiltering", "statusFiltering", "installmentTracking", "dueDateAlerts", "summaryCards"],
+            "navigation": ["PaymentDetails", "PaymentSchedule", "PaymentHistory"]
+          },
+          "PaymentDetails": {
+            "component": "PaymentDetailsScreen",
+            "info": ["trip_code", "total_amount", "paid_amount", "pending_amount"],
+            "installments": ["installment_number", "amount", "currency", "status", "observations"],
+            "actions": ["registerPayment", "downloadStatus"]
+          },
+          "PaymentSchedule": {
+            "component": "PaymentScheduleScreen",
+            "info": ["total_amount", "currency", "installment_dates", "amounts"],
+            "actions": ["downloadSchedule"]
+          },
+          "PaymentHistory": {
+            "component": "PaymentHistoryScreen",
+            "filters": ["date", "amount", "trip"],
+            "actions": ["viewReceipt", "downloadHistory"]
+          },
+          "RegisterPayment": {
+            "component": "RegisterPaymentScreen",
+            "fields": ["amount", "payment_method", "transaction_reference", "payment_date"],
+            "actions": ["save", "uploadReceipt"]
+          }
+        }
+      },
+      "location": {
+        "stackName": "LocationStack",
+        "initialRoute": "LiveLocation",
+        "screens": {
+          "LiveLocation": {
+            "component": "LiveLocationScreen",
+            "path": "src/modules/location/components/LiveLocationScreen.tsx",
+            "implemented": true,
+            "features": ["realTimeMap", "lastUpdate", "currentActivity", "liveStatus", "batteryLevel", "signalStrength"],
+            "navigation": ["ActivityHistory", "Schedule"],
+            "realTimeFeatures": ["GPS", "notifications", "emergencyAlerts", "refreshControl"],
+            "emergencyFeatures": ["emergencyContacts", "emergencyAlert", "quickCall"]
+          },
+          "ActivityHistory": {
+            "component": "ActivityHistoryScreen",
+            "filters": ["date", "activity_type"],
+            "activities": ["arrival", "departure", "meals", "tours", "medical_attention"],
+            "timeline": true
+          },
+          "Schedule": {
+            "component": "ScheduleScreen",
+            "dailyActivities": ["time", "activity", "location"],
+            "features": ["dayNavigation", "activityDetails"]
+          }
+        }
+      },
+      "luggage": {
+        "stackName": "LuggageStack",
+        "initialRoute": "LuggageList",
+        "screens": {
+          "LuggageList": {
+            "component": "LuggageListScreen",
+            "luggageTypes": ["hand_luggage", "checked_luggage"],
+            "actions": ["addLuggage", "viewRegulations"],
+            "navigation": ["AddLuggage", "LuggageDetails", "LuggageRegulations"]
+          },
+          "AddLuggage": {
+            "component": "AddLuggageScreen",
+            "fields": ["luggage_type", "color", "weight", "characteristics"],
+            "photos": ["front", "side", "back"],
+            "actions": ["save", "takePhoto", "uploadPhoto"]
+          },
+          "LuggageDetails": {
+            "component": "LuggageDetailsScreen",
+            "info": ["type", "weight", "color", "characteristics", "last_update", "photos"],
+            "actions": ["edit", "delete", "updatePhoto"]
+          },
+          "LuggageRegulations": {
+            "component": "LuggageRegulationsScreen",
+            "info": ["weight_limits", "size_limits", "prohibited_items", "recommendations"]
+          }
+        }
+      },
+      "notifications": {
+        "stackName": "NotificationsStack",
+        "initialRoute": "NotificationsList",
+        "screens": {
+          "NotificationsList": {
+            "component": "NotificationsListScreen",
+            "types": ["location", "medical", "activity", "payment", "general"],
+            "features": ["markAsRead", "filter", "delete"],
+            "realTime": true
+          },
+          "NotificationDetails": {
+            "component": "NotificationDetailsScreen",
+            "actions": ["acknowledge", "viewLocation", "contactSupport"]
+          }
+        }
+      },
+      "contact": {
+        "stackName": "ContactStack",
+        "initialRoute": "ContactInfo",
+        "screens": {
+          "ContactInfo": {
+            "component": "ContactInfoScreen",
+            "contactTypes": ["emergency", "support", "responsible"],
+            "actions": ["call", "whatsapp", "email"]
+          }
+        }
+      }
+    },
+    "globalFeatures": {
+      "nfcIntegration": {
+        "enabled": true,
+        "dataSync": ["profile", "medical", "nutritional", "emergency_contacts"]
+      },
+      "pushNotifications": {
+        "enabled": true,
+        "types": ["location", "medical", "activity", "payment", "emergency"]
+      },
+      "offlineSupport": {
+        "enabled": true,
+        "criticalData": ["emergency_contacts", "medical_info", "current_trip_info"]
+      },
+      "realTimeTracking": {
+        "enabled": true,
+        "updateInterval": 30,
+        "geofencing": true
+      },
+      "fileManagement": {
+        "enabled": true,
+        "types": ["documents", "photos", "medical_records"],
+        "cloudSync": true
+      }
+    },
+    "dataModels": {
+      "User": ["id", "email", "phone", "role", "created_at", "updated_at"],
+      "Profile": ["user_id", "personal_data", "medical_data", "nutritional_data", "completion_percentage"],
+      "Trip": ["id", "destination", "date", "group", "responsible", "status", "itinerary"],
+      "Payment": ["id", "trip_id", "user_id", "total_amount", "installments", "status"],
+      "Location": ["id", "user_id", "trip_id", "latitude", "longitude", "timestamp", "activity"],
+      "Luggage": ["id", "user_id", "trip_id", "type", "weight", "color", "characteristics", "photos"],
+      "Notification": ["id", "user_id", "type", "title", "message", "read", "timestamp"]
+    },
+    "apiEndpoints": {
+      "auth": ["/login", "/register", "/forgot-password", "/refresh-token"],
+      "profile": ["/profile", "/profile/medical", "/profile/nutritional"],
+      "trips": ["/trips", "/trips/:id", "/trips/:id/itinerary", "/trips/:id/documents"],
+      "payments": ["/payments", "/payments/:id", "/payments/register"],
+      "location": ["/location/current", "/location/history", "/location/update"],
+      "luggage": ["/luggage", "/luggage/:id"],
+      "notifications": ["/notifications", "/notifications/:id/read"]
+    },
+    "implementationStatus": {
+      "lastUpdated": "2025-01-15",
+      "completedComponents": [
+        "WelcomeScreen",
+        "LoginScreen", 
+        "DashboardScreen",
+        "ProfileMainScreen",
+        "PersonalDataScreen",
+        "TripsListScreen",
+        "TripDetailsScreen",
+        "PaymentsListScreen",
+        "LiveLocationScreen"
+      ],
+      "pendingComponents": [
+        "ForgotPasswordScreen",
+        "ResetConfirmationScreen", 
+        "RegisterScreen",
+        "MedicalRecordScreen",
+        "NutritionalRecordScreen",
+        "ItineraryScreen",
+        "DocumentsScreen",
+        "PhotosVideosScreen",
+        "RecommendationsScreen",
+        "PaymentDetailsScreen",
+        "PaymentScheduleScreen",
+        "PaymentHistoryScreen",
+        "RegisterPaymentScreen",
+        "ActivityHistoryScreen",
+        "ScheduleScreen",
+        "LuggageListScreen",
+        "AddLuggageScreen",
+        "LuggageDetailsScreen", 
+        "LuggageRegulationsScreen",
+        "NotificationsListScreen",
+        "NotificationDetailsScreen",
+        "ContactInfoScreen"
+      ],
+      "moduleProgress": {
+        "authentication": "40%",
+        "dashboard": "100%", 
+        "profile": "50%",
+        "trips": "50%",
+        "payments": "25%",
+        "location": "33%",
+        "luggage": "0%",
+        "notifications": "0%",
+        "contact": "0%"
+      },
+      "overallProgress": "30%"
+    },
+    "technicalDetails": {
+      "framework": "React Native 0.79.5",
+      "language": "TypeScript 5.8.3",
+      "expo": "~53.0.20",
+      "architecture": "Modular feature-based",
+      "stateManagement": "React Hooks + Context",
+      "navigation": "React Navigation",
+      "styling": "StyleSheet (React Native)",
+      "codeOrganization": {
+        "modules": "Feature-based modules with components, hooks, services",
+        "shared": "Reusable components, utilities, types",
+        "exports": "Centralized exports via index.ts files",
+        "typeDefinitions": "Full TypeScript coverage"
+      }
+    }
+  }
+}
