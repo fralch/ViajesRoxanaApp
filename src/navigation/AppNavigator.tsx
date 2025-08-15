@@ -3,6 +3,7 @@ import { Text, Image, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Import screens
 import DashboardScreen from '../modules/dashboard/components/DashboardScreen';
@@ -36,6 +37,8 @@ function HeaderLogo() {
 
 // Main Tab Navigator
 function MainTabNavigator() {
+  const insets = useSafeAreaInsets();
+  
   return (
     <Tab.Navigator
       screenOptions={{
@@ -45,9 +48,9 @@ function MainTabNavigator() {
           backgroundColor: '#fff',
           borderTopWidth: 1,
           borderTopColor: '#e0e0e0',
-          paddingBottom: 5,
+          paddingBottom: Math.max(insets.bottom, 15),
           paddingTop: 5,
-          height: 60,
+          height: 60 + Math.max(insets.bottom, 15),
         },
         headerStyle: {
           backgroundColor: '#d62d28',
