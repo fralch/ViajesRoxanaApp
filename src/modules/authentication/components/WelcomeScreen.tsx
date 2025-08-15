@@ -5,8 +5,10 @@ import {
   StyleSheet, 
   TouchableOpacity, 
   SafeAreaView,
-  ScrollView 
+  ScrollView,
+  Image
 } from 'react-native';
+import {FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 
 // --- Constants for Design System ---
 // Using constants makes the design consistent and easy to update.
@@ -40,13 +42,20 @@ const FONT_SIZES = {
 // --- Reusable Feature Item Component ---
 // Creating a separate component makes the main code cleaner and promotes reuse.
 interface FeatureItemProps {
-  icon: string;
+  iconName: string;
+  iconLibrary: 'FontAwesome' | 'FontAwesome6';
   text: string;
 }
 
-const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => (
+const FeatureItem: React.FC<FeatureItemProps> = ({ iconName, iconLibrary, text }) => (
   <View style={styles.featureItem}>
-    <Text style={styles.featureIcon}>{icon}</Text>
+    <View style={styles.featureIconContainer}>
+      {iconLibrary === 'FontAwesome' ? (
+        <FontAwesome name={iconName as any} size={20} color={COLORS.primary} />
+      ) : (
+        <FontAwesome6 name={iconName as any} size={20} color={COLORS.primary} />
+      )}
+    </View>
     <Text style={styles.featureText}>{text}</Text>
   </View>
 );
@@ -54,10 +63,10 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, text }) => (
 // --- Data for Features ---
 // Separating data from presentation is a good practice.
 const features = [
-  { icon: '📍', text: 'Ubicación en tiempo real' },
-  { icon: '🏥', text: 'Información médica segura' },
-  { icon: '💳', text: 'Gestión de pagos' },
-  { icon: '📱', text: 'Notificaciones instantáneas' },
+  { iconName: 'map-marker', iconLibrary: 'FontAwesome' as const, text: 'Ubicación en tiempo real' },
+  { iconName: 'user-md', iconLibrary: 'FontAwesome' as const, text: 'Atención médica 24/7' },
+  { iconName: 'suitcase-rolling', iconLibrary: 'FontAwesome6' as const, text: 'Control de equipaje' },
+  { iconName: 'bell', iconLibrary: 'FontAwesome' as const, text: 'Notificaciones instantáneas' },
 ];
 
 const WelcomeScreen = () => {
@@ -67,22 +76,26 @@ const WelcomeScreen = () => {
         {/* Logo/Header Section */}
         <View style={styles.headerContainer}>
           <View style={styles.logoPlaceholder}>
-            <Text style={styles.logoText}>🎒</Text>
+            <Image source={require('../../../shared/img/logo-cuadrado.png')} style={styles.logoImage} />
           </View>
-          <Text style={styles.appName}>ViajesRoxana</Text>
-          <Text style={styles.tagline}>Tu compañero de aventuras escolares</Text>
+          <Text style={styles.tagline}>Tu compañero de aventuras</Text>
         </View>
 
         {/* Welcome Content */}
         <View style={styles.contentContainer}>
           <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
           <Text style={styles.welcomeDescription}>
-            Mantente conectado con tus hijos durante sus viajes escolares. Recibe actualizaciones y accede a toda la información importante.
+            Mantente conectado con tus hijos durante sus viajes. Recibe actualizaciones y accede a toda la información importante.
           </Text>
           
           {/* Features List - Now dynamically rendered */}
           {features.map((feature, index) => (
-            <FeatureItem key={index} icon={feature.icon} text={feature.text} />
+            <FeatureItem 
+              key={index} 
+              iconName={feature.iconName} 
+              iconLibrary={feature.iconLibrary} 
+              text={feature.text} 
+            />
           ))}
         </View>
       </ScrollView>
@@ -125,18 +138,22 @@ const styles = StyleSheet.create({
   headerContainer: {
     alignItems: 'center',
     marginBottom: SPACING.xlarge,
+    marginTop: SPACING.large,
   },
   logoPlaceholder: {
-    width: 100,
-    height: 100,
+    width: 140,
+    height: 140,
     borderRadius: 50,
-    backgroundColor: COLORS.lightGray,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.medium,
   },
   logoText: {
     fontSize: 40,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   appName: {
     fontSize: FONT_SIZES.xxlarge,
@@ -172,8 +189,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.medium,
   },
-  featureIcon: {
-    fontSize: FONT_SIZES.xlarge,
+  featureIconContainer: {
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: SPACING.medium,
   },
   featureText: {
