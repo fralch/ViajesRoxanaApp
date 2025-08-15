@@ -9,6 +9,7 @@ import {
   Image
 } from 'react-native';
 import {FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 // --- Constants for Design System ---
 // Using constants makes the design consistent and easy to update.
@@ -70,6 +71,16 @@ const features = [
 ];
 
 const WelcomeScreen = () => {
+  const navigation = useNavigation();
+
+  const handleGuestLogin = () => {
+    navigation.navigate('Login' as never);
+  };
+
+  const handleLogin = () => {
+    navigation.navigate('Login' as never);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -102,7 +113,7 @@ const WelcomeScreen = () => {
 
       {/* Action Buttons & Footer */}
       <View style={styles.footerContainer}>
-        <TouchableOpacity style={[styles.button, styles.primaryButton]}>
+        <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleLogin}>
           <Text style={[styles.buttonText, styles.primaryButtonText]}>Iniciar Sesión</Text>
         </TouchableOpacity>
         
@@ -110,7 +121,7 @@ const WelcomeScreen = () => {
           <Text style={[styles.buttonText, styles.secondaryButtonText]}>Crear Cuenta</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity>
+        <TouchableOpacity onPress={handleGuestLogin}>
           <Text style={styles.skipButtonText}>Explorar como invitado</Text>
         </TouchableOpacity>
 
