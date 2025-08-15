@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import {FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import LoginModal from './LoginModal';
 
 // --- Constants for Design System ---
 // Using constants makes the design consistent and easy to update.
@@ -72,13 +73,14 @@ const features = [
 
 const WelcomeScreen = () => {
   const navigation = useNavigation();
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleGuestLogin = () => {
     navigation.navigate('Login' as never);
   };
 
   const handleLogin = () => {
-    navigation.navigate('Login' as never);
+    setModalVisible(true);
   };
 
   return (
@@ -131,6 +133,12 @@ const WelcomeScreen = () => {
           <Text style={styles.linkText}>Política de Privacidad</Text>
         </Text>
       </View>
+
+      {/* Login Modal */}
+      <LoginModal 
+        visible={modalVisible} 
+        onClose={() => setModalVisible(false)} 
+      />
     </SafeAreaView>
   );
 };
