@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   activeFilterButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
   },
   filterText: {
     fontSize: 14,
@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   primaryButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
   },
   secondaryButton: {
     backgroundColor: '#f8f9fa',

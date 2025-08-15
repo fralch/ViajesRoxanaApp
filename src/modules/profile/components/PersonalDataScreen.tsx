@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   activeTab: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
   },
   tabIcon: {
     fontSize: 16,
@@ -437,14 +437,14 @@ const styles = StyleSheet.create({
   photoPlaceholder: {
     fontSize: 36,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
   },
   photoButtons: {
     flexDirection: 'row',
     gap: 12,
   },
   photoButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
   addContactButton: {
     backgroundColor: '#f8f9fa',
     borderWidth: 2,
-    borderColor: '#2196F3',
+    borderColor: '#d62d28',
     borderStyle: 'dashed',
     borderRadius: 12,
     paddingVertical: 20,
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   },
   addContactText: {
     fontSize: 16,
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
   },
   saveButton: {

@@ -14,7 +14,7 @@ const Avatar: React.FC<AvatarProps> = ({
   size,
   name,
   backgroundColor = '#e3f2fd',
-  textColor = '#2196F3'
+  textColor = '#d62d28'
 }) => {
   const getInitials = (fullName?: string): string => {
     if (!fullName) return '?';

@@ -35,7 +35,7 @@ const ProfileMainScreen = () => {
       title: 'Ficha Nutricional',
       icon: '🍎',
       progress: 75,
-      color: '#2196F3',
+      color: '#d62d28',
       navigation: 'NutritionalRecord',
       description: 'Información alimentaria y restricciones dietéticas'
     }
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   profileImageText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
   },
   editPhotoButton: {
     position: 'absolute',

@@ -21,7 +21,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
       case 'error':
         return '#f44336';
       case 'info':
-        return '#2196F3';
+        return '#d62d28';
       default:
         return '#757575';
     }

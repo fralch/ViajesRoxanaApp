@@ -89,7 +89,7 @@ const getNotificationColor = (type: string) => {
   switch (type) {
     case 'location': return '#4CAF50';
     case 'medical': return '#FF9800';
-    case 'payment': return '#2196F3';
+    case 'payment': return '#d62d28';
     default: return '#757575';
   }
 };
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
   tripDestination: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
     marginBottom: 4,
   },
   tripDates: {
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   tripButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   seeAllText: {
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
     fontSize: 14,
   },

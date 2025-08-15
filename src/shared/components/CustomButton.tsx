@@ -52,7 +52,7 @@ const CustomButton: React.FC<ButtonProps> = ({
       activeOpacity={0.7}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === 'outline' ? '#2196F3' : '#fff'} />
+        <ActivityIndicator size="small" color={variant === 'outline' ? '#d62d28' : '#fff'} />
       ) : (
         <>
           {icon && <Text style={styles.icon}>{icon}</Text>}
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   // Variants
   primary: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
   },
   secondary: {
     backgroundColor: '#757575',
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#2196F3',
+    borderColor: '#d62d28',
   },
   danger: {
     backgroundColor: '#f44336',
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   outlineText: {
-    color: '#2196F3',
+    color: '#d62d28',
   },
   icon: {
     marginRight: 8,

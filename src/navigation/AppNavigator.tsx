@@ -21,7 +21,7 @@ function MainTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#2196F3',
+        tabBarActiveTintColor: '#d62d28',
         tabBarInactiveTintColor: '#666',
         tabBarStyle: {
           backgroundColor: '#fff',
@@ -32,7 +32,7 @@ function MainTabNavigator() {
           height: 60,
         },
         headerStyle: {
-          backgroundColor: '#2196F3',
+          backgroundColor: '#d62d28',
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

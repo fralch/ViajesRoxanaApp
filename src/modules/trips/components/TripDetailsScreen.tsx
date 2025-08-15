@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     fontSize: 16,
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
   },
   title: {
@@ -387,7 +387,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f9fa',
   },
   activeTab: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
   },
   tabIcon: {
     fontSize: 16,
@@ -597,7 +597,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   downloadButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -651,7 +651,7 @@ const styles = StyleSheet.create({
   activityTime: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
   },
   activityContent: {
     flex: 1,
@@ -708,7 +708,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   documentButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 8,
@@ -746,7 +746,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   uploadButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -780,7 +780,7 @@ const styles = StyleSheet.create({
   },
   bulletPoint: {
     fontSize: 16,
-    color: '#2196F3',
+    color: '#d62d28',
     marginRight: 8,
     marginTop: 2,
   },

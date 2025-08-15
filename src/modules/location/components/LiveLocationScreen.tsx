@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   mapButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   activityTime: {
     fontSize: 14,
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
   },
   activityLocation: {
@@ -544,7 +544,7 @@ const styles = StyleSheet.create({
   },
   viewAllText: {
     fontSize: 14,
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
   },
   historyItem: {
@@ -562,7 +562,7 @@ const styles = StyleSheet.create({
   historyTimeText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
   },
   historyContent: {
     flex: 1,
@@ -631,7 +631,7 @@ const styles = StyleSheet.create({
   },
   emergencyContactPhone: {
     fontSize: 14,
-    color: '#2196F3',
+    color: '#d62d28',
     fontWeight: '600',
   },
   emergencyContactActions: {

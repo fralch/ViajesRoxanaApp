@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
   appName: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#2196F3',
+    color: '#d62d28',
     marginBottom: 8,
   },
   tagline: {
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   loginButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: '#d62d28',
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -172,11 +172,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#2196F3',
+    borderColor: '#d62d28',
     marginBottom: 12,
   },
   registerButtonText: {
-    color: '#2196F3',
+    color: '#d62d28',
     fontSize: 18,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   linkText: {
-    color: '#2196F3',
+    color: '#d62d28',
     textDecorationLine: 'underline',
   },
 });
