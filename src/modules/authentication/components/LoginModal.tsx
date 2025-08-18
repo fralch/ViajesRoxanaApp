@@ -66,127 +66,121 @@ const LoginModal: React.FC<LoginModalProps> = ({ visible, onClose }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Card con Tabs */}
-            <View style={styles.card}>
-              {/* Tabs (segmentado) */}
-              <View style={styles.tabs}>
-                <TouchableOpacity
-                  style={[styles.tabBtn, tab === 'login' && styles.tabBtnActive]}
-                  onPress={() => setTab('login')}
-                  activeOpacity={0.9}
-                >
-                  <Text style={[styles.tabText, tab === 'login' && styles.tabTextActive]}>
-                    Tengo una cuenta
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.tabBtn, tab === 'register' && styles.tabBtnActive]}
-                  onPress={() => setTab('register')}
-                  activeOpacity={0.9}
-                >
-                  <Text style={[styles.tabText, tab === 'register' && styles.tabTextActive]}>
-                    Crear una cuenta
-                  </Text>
-                </TouchableOpacity>
-              </View>
+            {/* Tabs (segmentado) */}
+            <View style={styles.tabs}>
+              <TouchableOpacity
+                style={[styles.tabBtn, tab === 'login' && styles.tabBtnActive]}
+                onPress={() => setTab('login')}
+                activeOpacity={0.9}
+              >
+                <Text style={[styles.tabText, tab === 'login' && styles.tabTextActive]}>
+                  Tengo una cuenta
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabBtn, tab === 'register' && styles.tabBtnActive]}
+                onPress={() => setTab('register')}
+                activeOpacity={0.9}
+              >
+                <Text style={[styles.tabText, tab === 'register' && styles.tabTextActive]}>
+                  Crear una cuenta
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-              {/* Contenido del tab login */}
-              {tab === 'login' ? (
-                <>
-                  <Text style={styles.sectionTitle}>Iniciar sesión</Text>
+            {/* Contenido del tab login */}
+            {tab === 'login' ? (
+              <>
+                <Text style={styles.sectionTitle}>Iniciar sesión</Text>
 
-                  {/* Email / teléfono */}
-                  <Text style={styles.label}>Correo electrónico o celular</Text>
-                  <View style={styles.inputWrap}>
-                    <Ionicons name="person-outline" size={20} color="#6B7280" style={styles.leftIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="carlosrosales@gmail.com"
-                      placeholderTextColor="#9CA3AF"
-                      value={emailPhone}
-                      onChangeText={setEmailPhone}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoComplete="email"
-                    />
-                  </View>
+                {/* Email / teléfono */}
+                <Text style={styles.label}>Correo electrónico o celular</Text>
+                <View style={styles.inputWrap}>
+                  <Ionicons name="person-outline" size={20} color="#6B7280" style={styles.leftIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="carlosrosales@gmail.com"
+                    placeholderTextColor="#9CA3AF"
+                    value={emailPhone}
+                    onChangeText={setEmailPhone}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                  />
+                </View>
 
-                  {/* Password */}
-                  <Text style={[styles.label, { marginTop: 14 }]}>Contraseña</Text>
-                  <View style={styles.inputWrap}>
-                    <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.leftIcon} />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="****************"
-                      placeholderTextColor="#9CA3AF"
-                      value={password}
-                      onChangeText={setPassword}
-                      secureTextEntry={!isPasswordVisible}
-                      autoComplete="password"
-                    />
-                    <TouchableOpacity
-                      style={styles.eyeBtn}
-                      onPress={() => setIsPasswordVisible(!isPasswordVisible)}
-                    >
-                      <Ionicons
-                        name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                        size={20}
-                        color="#6B7280"
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Recordar + ¿Olvidaste? */}
-                  <View style={styles.rowBetween}>
-                    <TouchableOpacity
-                      style={styles.remember}
-                      onPress={() => setRemember(!remember)}
-                      activeOpacity={0.8}
-                    >
-                      <View style={[styles.checkbox, remember && styles.checkboxChecked]}>
-                        {remember && <MaterialCommunityIcons name="check" size={14} color="#fff" />}
-                      </View>
-                      <Text style={styles.rememberText}>Recordar</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={handleForgotPassword} hitSlop={6}>
-                      <Text style={styles.linkMuted}>¿No recuerdas tu contraseña?</Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Botón ingresar */}
+                {/* Password */}
+                <Text style={[styles.label, { marginTop: 14 }]}>Contraseña</Text>
+                <View style={styles.inputWrap}>
+                  <Ionicons name="lock-closed-outline" size={20} color="#6B7280" style={styles.leftIcon} />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="****************"
+                    placeholderTextColor="#9CA3AF"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!isPasswordVisible}
+                    autoComplete="password"
+                  />
                   <TouchableOpacity
-                    style={[styles.primaryBtn, isLoading && { opacity: 0.8 }]}
-                    onPress={handleLogin}
-                    disabled={isLoading}
-                    activeOpacity={0.9}
+                    style={styles.eyeBtn}
+                    onPress={() => setIsPasswordVisible(!isPasswordVisible)}
                   >
-                    <Text style={styles.primaryBtnText}>{isLoading ? 'Ingresando…' : 'Ingresar'}</Text>
+                    <Ionicons
+                      name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                      size={20}
+                      color="#6B7280"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Recordar + ¿Olvidaste? */}
+                <View style={styles.rowBetween}>
+                  <TouchableOpacity
+                    style={styles.remember}
+                    onPress={() => setRemember(!remember)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.checkbox, remember && styles.checkboxChecked]}>
+                      {remember && <MaterialCommunityIcons name="check" size={14} color="#fff" />}
+                    </View>
+                    <Text style={styles.rememberText}>Recordar</Text>
                   </TouchableOpacity>
 
-                  {/* Términos */}
-                  <Text style={styles.terms}>
-                    Al ingresar al sistema estás de acuerdo con los{' '}
-                    <Text style={styles.termsStrong}>términos y condiciones</Text>.
-                  </Text>
-                </>
-              ) : (
-                // Aquí podrías renderizar tu formulario de registro
-                <View style={{ paddingVertical: 24 }}>
-                  <Text style={{ color: '#6B7280', textAlign: 'center' }}>
-                    Formulario de registro próximamente.
-                  </Text>
+                  <TouchableOpacity onPress={handleForgotPassword} hitSlop={6}>
+                    <Text style={styles.linkMuted}>¿No recuerdas tu contraseña?</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
-            </View>
+
+                {/* Botón ingresar */}
+                <TouchableOpacity
+                  style={[styles.primaryBtn, isLoading && { opacity: 0.8 }]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
+                  activeOpacity={0.9}
+                >
+                  <Text style={styles.primaryBtnText}>{isLoading ? 'Ingresando…' : 'Ingresar'}</Text>
+                </TouchableOpacity>
+
+                {/* Términos */}
+                <Text style={styles.terms}>
+                  Al ingresar al sistema estás de acuerdo con los{' '}
+                  <Text style={styles.termsStrong}>términos y condiciones</Text>.
+                </Text>
+              </>
+            ) : (
+              <View style={{ paddingVertical: 24 }}>
+                <Text style={{ color: '#6B7280', textAlign: 'center' }}>
+                  Formulario de registro próximamente.
+                </Text>
+              </View>
+            )}
           </View>
         </KeyboardAvoidingView>
       </View>
     </Modal>
   );
 };
-
-const CARD_RADIUS = 16;
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -200,23 +194,18 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   modalContent: {
-    backgroundColor: '#F6F7F9',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
-  },
-  modalHeader: {
-    alignItems: 'flex-end',
-    marginBottom: 10,
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: CARD_RADIUS,
-    padding: 18,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
+  },
+  modalHeader: {
+    alignItems: 'flex-end',
+    marginBottom: 10,
   },
   tabs: {
     flexDirection: 'row',
