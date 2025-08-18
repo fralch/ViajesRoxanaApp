@@ -1,28 +1,28 @@
+// WelcomeScreen.tsx
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
   SafeAreaView,
-  ScrollView,
-  Image
+  Image,
+  StatusBar,
 } from 'react-native';
-import {FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import LoginModal from './LoginModal';
 
 // --- Constants for Design System ---
-// Using constants makes the design consistent and easy to update.
 const COLORS = {
   primary: '#d62d28',
   white: '#fff',
-  textPrimary: '#333',
-  textSecondary: '#666',
-  textMuted: '#999',
-  background: '#fff',
-  lightGray: '#e3f2fd',
-  border: '#d62d28',
+  textPrimary: '#222',
+  textSecondary: '#555',
+  textMuted: '#888',
+  background: '#fafafa',
+  border: '#e0e0e0',
 };
 
 const SPACING = {
@@ -33,40 +33,40 @@ const SPACING = {
 };
 
 const FONT_SIZES = {
-  xsmall: 12,
   small: 14,
   medium: 16,
   large: 18,
-  xlarge: 24,
-  xxlarge: 32,
+  xlarge: 28,
 };
 
-// --- Reusable Feature Item Component ---
-// Creating a separate component makes the main code cleaner and promotes reuse.
+// --- Feature Item Component with Animation ---
 interface FeatureItemProps {
   iconName: string;
   iconLibrary: 'FontAwesome' | 'FontAwesome6';
   text: string;
+  index: number;
 }
 
-const FeatureItem: React.FC<FeatureItemProps> = ({ iconName, iconLibrary, text }) => (
-  <View style={styles.featureItem}>
+const FeatureItem: React.FC<FeatureItemProps> = ({ iconName, iconLibrary, text, index }) => (
+  <Animated.View
+    entering={FadeInUp.delay(300 + index * 100).springify()}
+    style={styles.featureCard}
+  >
     <View style={styles.featureIconContainer}>
       {iconLibrary === 'FontAwesome' ? (
-        <FontAwesome name={iconName as any} size={20} color={COLORS.primary} />
+        <FontAwesome name={iconName as any} size={18} color={COLORS.primary} />
       ) : (
-        <FontAwesome6 name={iconName as any} size={20} color={COLORS.primary} />
+        <FontAwesome6 name={iconName as any} size={18} color={COLORS.primary} />
       )}
     </View>
     <Text style={styles.featureText}>{text}</Text>
-  </View>
+  </Animated.View>
 );
 
 // --- Data for Features ---
-// Separating data from presentation is a good practice.
 const features = [
   { iconName: 'map-marker', iconLibrary: 'FontAwesome' as const, text: 'Ubicación en tiempo real' },
-  { iconName: 'user-md', iconLibrary: 'FontAwesome' as const, text: 'Atención médica 24/7' },
+  { iconName: 'user-md', iconLibrary: 'FontAwesome' as const, text: 'Supervision médica' },
   { iconName: 'suitcase-rolling', iconLibrary: 'FontAwesome6' as const, text: 'Control de equipaje' },
   { iconName: 'bell', iconLibrary: 'FontAwesome' as const, text: 'Notificaciones instantáneas' },
 ];
@@ -85,57 +85,66 @@ const WelcomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {/* Logo/Header Section */}
-        <View style={styles.headerContainer}>
-          <View style={styles.logoPlaceholder}>
-            <Image source={require('../../../shared/img/logo-cuadrado.png')} style={styles.logoImage} />
-          </View>
-        </View>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-        {/* Welcome Content */}
-        <View style={styles.contentContainer}>
-          <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
-         
-          
-          {/* Features List - Now dynamically rendered */}
+      {/* Contenedor sin Scroll */}
+      <View style={styles.container}>
+        {/* Logo/Header Section */}
+        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
+          <Image
+            source={require('../../../shared/img/logo-cuadrado.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </Animated.View>
+
+        {/* Features Section */}
+        <View style={styles.featuresContainer}>
+          <Animated.Text entering={FadeInDown.delay(200).springify()} style={styles.welcomeTitle}>
+            Te brindamos
+          </Animated.Text>
+
           {features.map((feature, index) => (
-            <FeatureItem 
-              key={index} 
-              iconName={feature.iconName} 
-              iconLibrary={feature.iconLibrary} 
-              text={feature.text} 
+            <FeatureItem
+              key={index}
+              iconName={feature.iconName}
+              iconLibrary={feature.iconLibrary}
+              text={feature.text}
+              index={index}
             />
           ))}
         </View>
-      </ScrollView>
-
-      {/* Action Buttons & Footer */}
-      <View style={styles.footerContainer}>
-        <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleLogin}>
-          <Text style={[styles.buttonText, styles.primaryButtonText]}>Iniciar Sesión</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={[styles.button, styles.secondaryButton]}>
-          <Text style={[styles.buttonText, styles.secondaryButtonText]}>Crear Cuenta</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity onPress={handleGuestLogin}>
-          <Text style={styles.skipButtonText}>Explorar como invitado</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.footerText}>
-          Al continuar, aceptas nuestros{' '}
-          <Text style={styles.linkText}>Términos de Servicio</Text> y{' '}
-          <Text style={styles.linkText}>Política de Privacidad</Text>
-        </Text>
       </View>
 
-      {/* Login Modal */}
-      <LoginModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
-      />
+      {/* Footer Actions */}
+      <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.footer}>
+        <TouchableOpacity
+          style={[styles.button, styles.primaryButton]}
+          onPress={handleLogin}
+          accessibilityLabel="Iniciar sesión"
+        >
+          <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.secondaryButton]}
+          accessibilityLabel="Crear cuenta"
+        >
+          <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleGuestLogin} hitSlop={16}>
+          <Text style={styles.skipText}>Explorar como invitado</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.legalText}>
+          Al continuar, aceptas nuestros{' '}
+          <Text style={styles.link}>Términos de Servicio</Text> y{' '}
+          <Text style={styles.link}>Política de Privacidad</Text>
+        </Text>
+      </Animated.View>
+
+      <LoginModal visible={modalVisible} onClose={() => setModalVisible(false)} />
     </SafeAreaView>
   );
 };
@@ -145,122 +154,101 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContainer: {
-    flexGrow: 1,
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
     justifyContent: 'center',
-    padding: SPACING.large,
   },
-  // --- Header ---
-  headerContainer: {
+  header: {
     alignItems: 'center',
-    marginBottom: SPACING.xlarge,
-    marginTop: SPACING.large,
+    marginTop: 20,
+    marginBottom: 16,
   },
-  logoPlaceholder: {
-    width: 140,
-    height: 140,
-    borderRadius: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
+  logo: {
+    width: 140,   // 🔥 más grande
+    height: 140,  // 🔥 más grande
+    marginBottom: 12,
   },
-  logoText: {
-    fontSize: 40,
-  },
-  logoImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'contain',
-  },
-  appName: {
-    fontSize: FONT_SIZES.xxlarge,
-    fontWeight: '700',
-    color: COLORS.primary,
-  },
-  tagline: {
-    fontSize: FONT_SIZES.medium,
-    color: COLORS.textSecondary,
-    marginTop: SPACING.small / 2,
-  },
-  // --- Main Content ---
-  contentContainer: {
-    marginBottom: SPACING.xlarge,
+  featuresContainer: {
+    marginTop: 12,
   },
   welcomeTitle: {
-    fontSize: FONT_SIZES.xlarge,
-    fontWeight: 'bold',
-    color: COLORS.textPrimary,
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#555',
+    marginBottom: 12,
     textAlign: 'center',
-    marginBottom: SPACING.medium,
   },
-  welcomeDescription: {
-    fontSize: FONT_SIZES.medium,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: SPACING.large,
-  },
-  // --- Feature Item ---
-  featureItem: {
+  featureCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.medium,
+    backgroundColor: COLORS.white,
+    padding: 10,         // 🔥 más compacto
+    marginBottom: 8,     // 🔥 menos espacio
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   featureIconContainer: {
     width: 32,
     height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fff0f0',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.medium,
+    marginRight: 12,
   },
   featureText: {
-    fontSize: FONT_SIZES.medium,
+    fontSize: FONT_SIZES.small, // 🔥 texto más compacto
     color: COLORS.textPrimary,
-    flex: 1, // Allows text to wrap
+    flex: 1,
   },
-  // --- Footer & Actions ---
-  footerContainer: {
-    padding: SPACING.large,
-    paddingTop: SPACING.medium,
+  footer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: COLORS.white,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
+    borderTopColor: COLORS.border,
   },
   button: {
-    paddingVertical: SPACING.medium,
+    paddingVertical: 14,
     borderRadius: 12,
-    marginBottom: SPACING.medium,
     alignItems: 'center',
+    marginBottom: 12,
   },
   primaryButton: {
     backgroundColor: COLORS.primary,
   },
-  secondaryButton: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-  },
-  buttonText: {
+  primaryButtonText: {
+    color: COLORS.white,
     fontSize: FONT_SIZES.large,
     fontWeight: '600',
   },
-  primaryButtonText: {
-    color: COLORS.white,
+  secondaryButton: {
+    borderColor: COLORS.primary,
+    borderWidth: 1.5,
   },
   secondaryButtonText: {
     color: COLORS.primary,
+    fontSize: FONT_SIZES.large,
+    fontWeight: '600',
   },
-  skipButtonText: {
+  skipText: {
     color: COLORS.textSecondary,
     textAlign: 'center',
-    fontSize: FONT_SIZES.small,
-    marginBottom: SPACING.large,
+    fontSize: FONT_SIZES.medium,
+    marginBottom: 12,
   },
-  footerText: {
-    fontSize: FONT_SIZES.xsmall,
+  legalText: {
+    fontSize: 12,
     color: COLORS.textMuted,
     textAlign: 'center',
     lineHeight: 18,
   },
-  linkText: {
+  link: {
     color: COLORS.primary,
     textDecorationLine: 'underline',
   },
