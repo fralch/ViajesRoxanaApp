@@ -91,15 +91,12 @@ const WelcomeScreen = () => {
           <View style={styles.logoPlaceholder}>
             <Image source={require('../../../shared/img/logo-cuadrado.png')} style={styles.logoImage} />
           </View>
-          <Text style={styles.tagline}>Tu compañero de aventuras</Text>
         </View>
 
         {/* Welcome Content */}
         <View style={styles.contentContainer}>
           <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
-          <Text style={styles.welcomeDescription}>
-            Mantente conectado con tus hijos durante sus viajes. Recibe actualizaciones y accede a toda la información importante.
-          </Text>
+         
           
           {/* Features List - Now dynamically rendered */}
           {features.map((feature, index) => (
