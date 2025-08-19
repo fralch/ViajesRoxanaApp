@@ -19,7 +19,7 @@ const DashboardScreen = () => {
 
   const quickActions = [
     { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, screen: "Location" },
-    { id: 2, title: "Perfil Médico", icon: <FontAwesome6 name="briefcase-medical" size={28} color="#d62d28" />, screen: "Profile" },
+    { id: 2, title: "Perfil", icon: <FontAwesome6 name="user" size={28} color="#d62d28" />, screen: "Profile" },
     { id: 3, title: "Pagos", icon: <FontAwesome6 name="credit-card" size={28} color="#d62d28" />, screen: "Payments" },
     { id: 4, title: "Equipaje", icon: <FontAwesome6 name="suitcase-rolling" size={28} color="#d62d28" />, screen: "Luggage" }
   ];
