@@ -119,16 +119,17 @@ function MainTabNavigator() {
 
 // Root Stack Navigator (for authentication flow)
 function AppNavigator() {
-  const isAuthenticated = true;
+  const isAuthenticated = false;
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated ? (
+        {isAuthenticated ? (
           <Stack.Screen name="MainApp" component={MainTabNavigator} />
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
+            <Stack.Screen name="MainApp" component={MainTabNavigator} />
           </>
         )}
       </Stack.Navigator>

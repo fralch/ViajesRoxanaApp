@@ -8,12 +8,14 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
 interface LoginFormProps {
   onClose: () => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
+  const navigation = useNavigation();
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -28,8 +30,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
     setIsLoading(true);
     try {
       await new Promise(r => setTimeout(r, 1200));
-      Alert.alert('Éxito', 'Inicio de sesión exitoso');
       onClose();
+      navigation.navigate('MainApp' as never);
     } catch {
       Alert.alert('Error', 'Credenciales incorrectas');
     } finally {
