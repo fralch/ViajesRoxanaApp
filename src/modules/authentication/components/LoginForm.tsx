@@ -43,7 +43,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Iniciar sesión</Text>
 
       {/* Email / teléfono */}
       <Text style={styles.label}>Correo electrónico o celular</Text>
@@ -113,12 +112,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
       >
         <Text style={styles.primaryBtnText}>{isLoading ? 'Ingresando…' : 'Ingresar'}</Text>
       </TouchableOpacity>
-
-      {/* Términos */}
-      <Text style={styles.terms}>
-        Al continuar aceptas nuestros <Text style={styles.termsStrong}>Términos y Condiciones</Text> y la{' '}
-        <Text style={styles.termsStrong}>Política de Privacidad</Text>.
-      </Text>
     </View>
   );
 };

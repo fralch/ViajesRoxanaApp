@@ -132,7 +132,7 @@ const WelcomeScreen = () => {
         >
           <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
         </TouchableOpacity>
-
+      {/* 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={handleRegister}
@@ -140,6 +140,7 @@ const WelcomeScreen = () => {
         >
           <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
         </TouchableOpacity>
+         */}
 
         <TouchableOpacity onPress={handleGuestLogin} hitSlop={16}>
           <Text style={styles.skipText}>Explorar como invitado</Text>

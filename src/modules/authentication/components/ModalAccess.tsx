@@ -35,54 +35,15 @@ const ModalAccess: React.FC<ModalAccessProps> = ({ visible, onClose, initialTab 
               {/* Header */}
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>
-                  {tab === 'login' ? 'Bienvenido' : 'Crea tu cuenta'}
+                  Iniciar Sesión
                 </Text>
                 <TouchableOpacity onPress={onClose} style={styles.closeBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Ionicons name="close" size={24} color="#0F172A" />
                 </TouchableOpacity>
               </View>
 
-              {/* Tabs */}
-              <View style={styles.tabs}>
-                <TouchableOpacity
-                  style={[styles.tabBtn, tab === 'login' && styles.tabBtnActive]}
-                  onPress={() => setTab('login')}
-                  activeOpacity={0.9}
-                >
-                  <Ionicons
-                    name="log-in-outline"
-                    size={18}
-                    color={tab === 'login' ? '#0F172A' : '#6B7280'}
-                    style={styles.tabIcon}
-                  />
-                  <Text style={[styles.tabText, tab === 'login' && styles.tabTextActive]}>
-                    Tengo una cuenta
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.tabBtn, tab === 'register' && styles.tabBtnActive]}
-                  onPress={() => setTab('register')}
-                  activeOpacity={0.9}
-                >
-                  <Ionicons
-                    name="person-add-outline"
-                    size={18}
-                    color={tab === 'register' ? '#0F172A' : '#6B7280'}
-                    style={styles.tabIcon}
-                  />
-                  <Text style={[styles.tabText, tab === 'register' && styles.tabTextActive]}>
-                    Crear una cuenta
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
               {/* Content */}
-              {tab === 'login' ? (
-                <LoginForm onClose={onClose} />
-              ) : (
-                <RegisterForm onClose={onClose} />
-              )}
+              <LoginForm onClose={onClose} />
             </View>
           </KeyboardAvoidingView>
         </View>
