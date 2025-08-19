@@ -159,7 +159,9 @@ const DashboardScreen = () => {
 
       {/* Viaje Actual (usa datos del hijo seleccionado) */}
       <View style={styles.tripCard}>
-        <Text style={styles.tripTitle}>Viaje Actual</Text>
+        <Text style={styles.tripTitle}>
+          Viaje Actual de <Text style={styles.tripChild}>{selectedChild.name.split(' ')[0]}</Text>
+        </Text>
         <View style={styles.tripInfo}>
           <Text style={styles.tripDestination}>{selectedChild.trip.destination}</Text>
           <Text style={styles.tripDates}>{selectedChild.trip.dates}</Text>
@@ -172,6 +174,7 @@ const DashboardScreen = () => {
           <Text style={styles.tripButtonText}>Ver Detalles</Text>
         </TouchableOpacity>
       </View>
+
 
       {/* Acceso Rápido (se mantiene igual) */}
       <View style={styles.section}>
@@ -261,6 +264,10 @@ const styles = StyleSheet.create({
   notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
   seeAllButton: { paddingVertical: 12, alignItems: 'center' },
   seeAllText: { color: '#d62d28', fontWeight: '600', fontSize: 14 },
+  tripChild: {
+    fontWeight: '600',
+    color: '#aaa',
+  },
 });
 
 export default DashboardScreen;
