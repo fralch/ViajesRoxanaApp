@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar } from 'react-native';
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 
 // --- Dropdown simple sin librerías ---
@@ -133,7 +133,9 @@ const DashboardScreen = () => {
   ];
 
   return (
-    <ScrollView style={styles.container}>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor="#d62d28" />
+      <ScrollView style={styles.container}>
       {/* Header (DISEÑO ORIGINAL, solo se agrega el selector debajo del nombre) */}
       <View style={styles.header}>
         <View>
@@ -201,6 +203,7 @@ const DashboardScreen = () => {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </>
   );
 };
 
