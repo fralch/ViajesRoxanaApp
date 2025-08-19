@@ -13,7 +13,6 @@ import TripsListScreen from '../modules/trips/components/TripsListScreen';
 import PaymentsListScreen from '../modules/payments/components/PaymentsListScreen';
 import LiveLocationScreen from '../modules/location/components/LiveLocationScreen';
 import WelcomeScreen from '../modules/authentication/components/WelcomeScreen';
-import LoginScreen from '../modules/authentication/components/LoginScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -130,7 +129,6 @@ function AppNavigator() {
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
           </>
         )}
       </Stack.Navigator>

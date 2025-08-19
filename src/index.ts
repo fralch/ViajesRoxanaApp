@@ -23,4 +23,3 @@ export { default as TripsListScreen } from './modules/trips/components/TripsList
 export { default as PaymentsListScreen } from './modules/payments/components/PaymentsListScreen';
 export { default as LiveLocationScreen } from './modules/location/components/LiveLocationScreen';
 export { default as WelcomeScreen } from './modules/authentication/components/WelcomeScreen';
-export { default as LoginScreen } from './modules/authentication/components/LoginScreen';

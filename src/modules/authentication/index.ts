@@ -1,6 +1,8 @@
 // Authentication module exports
 export { default as WelcomeScreen } from './components/WelcomeScreen';
-export { default as LoginScreen } from './components/LoginScreen';
+export { default as RegisterForm } from './components/RegisterForm';
+export { default as LoginForm } from './components/LoginForm';
+export { default as ModalAccess } from './components/ModalAccess';
 
 // Types
 export interface AuthUser {

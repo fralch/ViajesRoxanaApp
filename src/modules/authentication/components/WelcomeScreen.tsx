@@ -12,7 +12,7 @@ import {
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import LoginModal from './LoginModal';
+import ModalAccess from './ModalAccess';
 
 // --- Constants for Design System ---
 const COLORS = {
@@ -74,12 +74,19 @@ const features = [
 const WelcomeScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalTab, setModalTab] = useState<'login' | 'register'>('login');
 
   const handleGuestLogin = () => {
     navigation.navigate('Login' as never);
   };
 
   const handleLogin = () => {
+    setModalTab('login');
+    setModalVisible(true);
+  };
+
+  const handleRegister = () => {
+    setModalTab('register');
     setModalVisible(true);
   };
 
@@ -128,6 +135,7 @@ const WelcomeScreen = () => {
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
+          onPress={handleRegister}
           accessibilityLabel="Crear cuenta"
         >
           <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
@@ -144,7 +152,7 @@ const WelcomeScreen = () => {
         </Text>
       </Animated.View>
 
-      <LoginModal visible={modalVisible} onClose={() => setModalVisible(false)} />
+      <ModalAccess visible={modalVisible} onClose={() => setModalVisible(false)} initialTab={modalTab} />
     </SafeAreaView>
   );
 };
