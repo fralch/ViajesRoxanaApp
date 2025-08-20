@@ -140,7 +140,7 @@ const DashboardScreen = () => {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>¡Hola, {userName}!</Text>
-          <Text style={styles.subGreeting}>Bienvenida de vuelta</Text>
+          <Text style={styles.subGreeting}>Bienvenido</Text>
 
           {/* Select de hijo */}
           <View style={{ marginTop: 10 }}>
