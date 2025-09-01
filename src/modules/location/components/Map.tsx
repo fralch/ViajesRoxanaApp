@@ -1,5 +1,15 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Dimensions, Platform, Linking } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  Dimensions,
+  Platform,
+  Linking,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
 
 interface MapProps {
   latitude: number;
@@ -18,11 +28,94 @@ export const Map: React.FC<MapProps> = ({
   address,
   onClose
 }) => {
+  const [mapHtml, setMapHtml] = useState<string>('');
+
+  useEffect(() => {
+    // Generar HTML con Leaflet para mostrar el mapa
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Mapa de Ubicación</title>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+        <style>
+          body { margin: 0; padding: 0; }
+          #map { height: 100vh; width: 100vw; }
+          .custom-popup {
+            font-family: Arial, sans-serif;
+            text-align: center;
+          }
+          .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #1F2937;
+            margin-bottom: 8px;
+          }
+          .popup-coords {
+            font-size: 12px;
+            color: #6B7280;
+            font-family: monospace;
+            margin-bottom: 4px;
+          }
+          .popup-address {
+            font-size: 14px;
+            color: #374151;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script>
+          // Inicializar el mapa
+          var map = L.map('map').setView([${latitude}, ${longitude}], 15);
+          
+          // Agregar capa de tiles de OpenStreetMap
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+          
+          // Crear icono personalizado
+          var customIcon = L.divIcon({
+            className: 'custom-div-icon',
+            html: '<div style="background-color: #3B82F6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="color: white; font-size: 16px;">📍</span></div>',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+          });
+          
+          // Agregar marcador
+          var marker = L.marker([${latitude}, ${longitude}], {icon: customIcon}).addTo(map);
+          
+          // Contenido del popup
+          var popupContent = '<div class="custom-popup">' +
+            '<div class="popup-title">${studentName}</div>' +
+            '<div class="popup-coords">Lat: ${latitude.toFixed(6)}</div>' +
+            '<div class="popup-coords">Lng: ${longitude.toFixed(6)}</div>' +
+            ${address ? `'<div class="popup-address">${address}</div>' +` : ''}
+            '</div>';
+          
+          marker.bindPopup(popupContent).openPopup();
+          
+          // Centrar el mapa en la ubicación
+          map.setView([${latitude}, ${longitude}], 15);
+        </script>
+      </body>
+      </html>
+    `;
+    setMapHtml(html);
+  }, [latitude, longitude, studentName, address]);
+
   const handleCenterLocation = () => {
-    const url = `https://www.google.com/maps/@${latitude},${longitude},15z`;
-    Linking.openURL(url).catch(() => {
-      Alert.alert('Error', 'No se pudo abrir Google Maps');
-    });
+    Alert.alert(
+      'Centrar Ubicación',
+      `Ubicación centrada en:\nLatitud: ${latitude.toFixed(6)}\nLongitud: ${longitude.toFixed(6)}`
+    );
   };
 
   const handleShareLocation = () => {
@@ -37,61 +130,51 @@ export const Map: React.FC<MapProps> = ({
   };
 
   const handleGetDirections = () => {
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
-    const wazeUrl = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
-    
     Alert.alert(
-      'Direcciones',
-      '¿Cómo te gustaría obtener direcciones?',
+      'Obtener Direcciones',
+      'Selecciona la aplicación de mapas:',
       [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Google Maps', 
-          onPress: () => Linking.openURL(googleMapsUrl).catch(() => 
-            Alert.alert('Error', 'No se pudo abrir Google Maps')
-          )
+        {
+          text: 'Google Maps',
+          onPress: () => {
+            const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+            Linking.openURL(url).catch(() => {
+              Alert.alert('Error', 'No se pudo abrir Google Maps');
+            });
+          },
         },
-        { 
-          text: 'Waze', 
-          onPress: () => Linking.openURL(wazeUrl).catch(() => 
-            Alert.alert('Error', 'No se pudo abrir Waze')
-          )
-        }
+        {
+          text: 'Waze',
+          onPress: () => {
+            const url = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
+            Linking.openURL(url).catch(() => {
+              Alert.alert('Error', 'No se pudo abrir Waze');
+            });
+          },
+        },
+        { text: 'Cancelar', style: 'cancel' },
       ]
     );
   };
 
   return (
     <View style={styles.container}>
-      {/* Map placeholder with location info */}
-      <View style={styles.mapPlaceholder}>
-        <View style={styles.locationDisplay}>
-          <View style={styles.markerContainer}>
-            <View style={styles.marker}>
-              <Text style={styles.markerText}>📍</Text>
-            </View>
-            <View style={styles.markerLabel}>
-              <Text style={styles.markerLabelText}>{studentName}</Text>
-            </View>
+      {/* Mapa real usando WebView con Leaflet */}
+      <View style={styles.mapContainer}>
+        {mapHtml ? (
+          <WebView
+            source={{ html: mapHtml }}
+            style={styles.webView}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            startInLoadingState={true}
+            scalesPageToFit={true}
+          />
+        ) : (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Cargando mapa...</Text>
           </View>
-          
-          <View style={styles.coordinatesDisplay}>
-            <Text style={styles.coordinatesTitle}>Ubicación Actual</Text>
-            <Text style={styles.coordinatesText}>
-              {latitude.toFixed(6)}, {longitude.toFixed(6)}
-            </Text>
-            {address && (
-              <Text style={styles.addressText}>{address}</Text>
-            )}
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.openMapButton} 
-            onPress={handleCenterLocation}
-          >
-            <Text style={styles.openMapButtonText}>🗺️ Ver en Google Maps</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </View>
 
       {/* Location info panel */}
@@ -136,98 +219,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  mapPlaceholder: {
+  mapContainer: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+  },
+  webView: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    backgroundColor: '#F0F9FF',
   },
-  locationDisplay: {
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 30,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    minWidth: width * 0.8,
-  },
-  coordinatesDisplay: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  coordinatesTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 8,
-  },
-  coordinatesText: {
+  loadingText: {
     fontSize: 16,
     color: '#6B7280',
-    fontFamily: 'monospace',
-    marginBottom: 8,
-  },
-  addressText: {
-    fontSize: 14,
-    color: '#374151',
-    textAlign: 'center',
-  },
-  openMapButton: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 25,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  openMapButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  markerContainer: {
-    alignItems: 'center',
-  },
-  marker: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#3B82F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  markerText: {
-    fontSize: 20,
-    color: '#fff',
-  },
-  markerLabel: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-    marginTop: 4,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  markerLabelText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
   },
   infoPanel: {
     position: 'absolute',
