@@ -19,6 +19,8 @@ import {
 import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome, FontAwesome5, AntDesign, Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { PanResponder, PanResponderInstance } from 'react-native';
 
 // --- Design System refinado ---
 const COLORS = {
@@ -80,6 +82,7 @@ export const Map: React.FC<MapProps> = ({
   studentName,
   address,
 }) => {
+  const insets = useSafeAreaInsets();
   const [mapHtml, setMapHtml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [showDirectionsModal, setShowDirectionsModal] = useState(false);
@@ -88,6 +91,25 @@ export const Map: React.FC<MapProps> = ({
   const [isPanelExpanded, setIsPanelExpanded] = useState(false);
   const [modalScale] = useState(new Animated.Value(0));
   const [shareModalScale] = useState(new Animated.Value(0));
+  const [scrolled, setScrolled] = useState(false);
+  const [panelHeightValue, setPanelHeightValue] = useState(0);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  const PEEK_HEIGHT = Math.round(Math.max(height * 0.20, 120));
+  const MID_HEIGHT = Math.round(Math.max(height * 0.40, 220));
+  const MAX65 = Math.round(height * 0.65);
+  const TALL_MAX = Math.round(Math.min(height * 0.70, 560));
+  const SNAP_POINTS_BASE = [0, PEEK_HEIGHT, MID_HEIGHT, MAX65];
+  const SNAP_POINTS = height >= 780 ? [...SNAP_POINTS_BASE, TALL_MAX] : SNAP_POINTS_BASE;
+  const MAX_HEIGHT = SNAP_POINTS[SNAP_POINTS.length - 1];
+  const heightRef = useRef(0);
+  useEffect(() => {
+    const id = panelHeight.addListener(({ value }) => {
+      heightRef.current = value;
+      setPanelHeightValue(value);
+    });
+    return () => panelHeight.removeListener(id);
+  }, [panelHeight]);
 
   useEffect(() => {
     // HTML de Leaflet sin mostrar lat/long en el popup
@@ -162,16 +184,61 @@ export const Map: React.FC<MapProps> = ({
     setMapHtml(html);
   }, [latitude, longitude, studentName, address]);
 
-  const animatePanel = (expand: boolean) => {
-    const toValue = expand ? 220 : 0;
-    setIsPanelExpanded(expand);
+  const animateTo = (toValue: number) => {
+    setIsPanelExpanded(toValue === MAX_HEIGHT);
+    setIsPanelOpen(toValue > 0);
     Animated.spring(panelHeight, {
       toValue,
       useNativeDriver: false,
       tension: 120,
-      friction: 10,
+      friction: 12,
     }).start();
   };
+
+  const animatePanel = (expand: boolean) => {
+    const toValue = expand ? MAX_HEIGHT : 0;
+    animateTo(toValue);
+  };
+
+  const nearestSnap = (val: number) => {
+    let nearest = SNAP_POINTS[0];
+    let minDiff = Math.abs(val - nearest);
+    for (const p of SNAP_POINTS) {
+      const d = Math.abs(val - p);
+      if (d < minDiff) {
+        minDiff = d;
+        nearest = p;
+      }
+    }
+    return nearest;
+  };
+
+  const startHeightRef = useRef(0);
+  const panResponder = useRef<PanResponderInstance>(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 6,
+      onPanResponderGrant: () => {
+        startHeightRef.current = heightRef.current;
+      },
+      onPanResponderMove: (_, gesture) => {
+        const next = Math.max(0, Math.min(MAX_HEIGHT, startHeightRef.current - gesture.dy));
+        panelHeight.setValue(next);
+      },
+      onPanResponderRelease: (_, gesture) => {
+        const current = heightRef.current;
+        const velocity = gesture.vy; // + down, - up
+        let target = nearestSnap(current);
+        const idx = SNAP_POINTS.indexOf(target);
+        if (velocity < -0.6 && idx < SNAP_POINTS.length - 1) {
+          target = SNAP_POINTS[idx + 1];
+        } else if (velocity > 0.6 && idx > 0) {
+          target = SNAP_POINTS[idx - 1];
+        }
+        animateTo(target);
+      },
+    })
+  ).current;
 
   const animateModal = (show: boolean, scaleValue: Animated.Value) => {
     Animated.spring(scaleValue, {
@@ -185,7 +252,7 @@ export const Map: React.FC<MapProps> = ({
   const handleMapLoad = () => {
     setIsLoading(false);
     // Abre el panel automáticamente la primera vez
-    setTimeout(() => animatePanel(true), 250);
+    setTimeout(() => animateTo(MID_HEIGHT), 250);
   };
 
   const handleShareLocation = () => {
@@ -420,18 +487,39 @@ export const Map: React.FC<MapProps> = ({
       </View>
 
       {/* Panel flotante */}
-      <Animated.View style={[styles.floatingPanel, { height: panelHeight }]}>
+      <Animated.View style={[styles.floatingPanel, isPanelOpen ? styles.floatingPanelOpen : null, { height: panelHeight }]}>
         <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.panelGradient}>
           <ScrollView
             style={styles.panelContainer}
-            contentContainerStyle={styles.panelContent}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
+            contentContainerStyle={[
+              styles.panelContent,
+              { paddingBottom: Math.max(insets.bottom, SPACING.large) },
+            ]}
+            stickyHeaderIndices={[1]}
+            showsVerticalScrollIndicator={true}
+            indicatorStyle={Platform.OS === 'ios' ? 'black' : undefined}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            scrollEventThrottle={16}
+            onScroll={(e) => {
+              const y = e.nativeEvent.contentOffset.y;
+              if (y > 2 && !scrolled) setScrolled(true);
+              if (y <= 2 && scrolled) setScrolled(false);
+            }}
+            bounces
           >
             {/* Handle tocable para expandir/contraer */}
-            <TouchableOpacity style={styles.dragHandle} activeOpacity={0.7} onPress={() => animatePanel(!isPanelExpanded)} />
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={isPanelExpanded ? 'Contraer panel' : 'Expandir panel'}
+              hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
+              style={styles.dragHandle}
+              activeOpacity={0.7}
+              onPress={() => animatePanel(!isPanelExpanded)}
+              {...panResponder.panHandlers}
+            />
 
-            <View style={styles.panelHeader}>
+            <View style={[styles.panelHeader, scrolled && styles.panelHeaderScrolled]} {...panResponder.panHandlers}> 
               <View style={styles.studentInfo}>
                 <View style={styles.studentNameContainer}>
                   <View style={styles.avatarContainer}>
@@ -448,6 +536,14 @@ export const Map: React.FC<MapProps> = ({
                 )}
               </View>
             </View>
+
+            {/* Hint de gesto */}
+            {panelHeightValue < MAX_HEIGHT && !scrolled && (
+              <View style={styles.gestureHint}>
+                <Ionicons name="swap-vertical" size={16} color={COLORS.textMuted} />
+                <Text style={styles.gestureHintText}>Desliza para expandir</Text>
+              </View>
+            )}
 
             {/* Acciones */}
             <View style={styles.actionButtons}>
@@ -486,10 +582,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: BORDER_RADIUS.xlarge,
     borderTopRightRadius: BORDER_RADIUS.xlarge,
     overflow: 'hidden',
-    elevation: 25,
+    elevation: 18,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+  },
+  floatingPanelOpen: {
+    elevation: 25,
+    shadowOpacity: 0.18,
     shadowRadius: 16,
   },
   panelGradient: { width: '100%', height: '100%' },
@@ -497,7 +598,6 @@ const styles = StyleSheet.create({
   panelContent: {
     paddingHorizontal: SPACING.xlarge,
     paddingTop: SPACING.medium,
-    paddingBottom: Platform.OS === 'ios' ? 34 : SPACING.large,
     minHeight: 220,
   },
   dragHandle: {
@@ -507,7 +607,23 @@ const styles = StyleSheet.create({
     marginVertical: SPACING.medium,
   },
 
-  panelHeader: { marginBottom: SPACING.large },
+  panelHeader: { marginBottom: SPACING.large, backgroundColor: COLORS.white },
+  panelHeaderScrolled: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: COLORS.border,
+  },
+  gestureHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.small,
+    alignSelf: 'center',
+    marginTop: -SPACING.small,
+    marginBottom: SPACING.small,
+  },
+  gestureHintText: {
+    fontSize: FONT_SIZES.small,
+    color: COLORS.textMuted,
+  },
   studentInfo: { gap: SPACING.medium },
   studentNameContainer: { flexDirection: 'row', alignItems: 'center' },
   avatarContainer: {
