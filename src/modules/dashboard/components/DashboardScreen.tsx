@@ -127,9 +127,7 @@ const DashboardScreen = () => {
   // Acciones rápidas (se mantienen, pero puedes usarlas con el contexto del hijo seleccionado)
   const quickActions = [
     { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, screen: "Location" },
-    { id: 2, title: "Perfil", icon: <FontAwesome6 name="user" size={28} color="#d62d28" />, screen: "Profile" },
-    { id: 3, title: "Pagos", icon: <FontAwesome6 name="credit-card" size={28} color="#d62d28" />, screen: "Payments" },
-    { id: 4, title: "Equipaje", icon: <FontAwesome6 name="suitcase-rolling" size={28} color="#d62d28" />, screen: "Luggage" }
+    { id: 2, title: "Perfil", icon: <FontAwesome  name="user" size={28} color="#d62d28" />, screen: "Profile" },
   ];
 
   return (
@@ -170,9 +168,6 @@ const DashboardScreen = () => {
             <Text style={styles.tripDetail}>Responsable: {selectedChild.trip.responsible}</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.tripButton}>
-          <Text style={styles.tripButtonText}>Ver Detalles</Text>
-        </TouchableOpacity>
       </View>
 
 
@@ -201,9 +196,7 @@ const DashboardScreen = () => {
             <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.type) }]} />
           </TouchableOpacity>
         ))}
-        <TouchableOpacity style={styles.seeAllButton}>
-          <Text style={styles.seeAllText}>Ver todas las notificaciones</Text>
-        </TouchableOpacity>
+      
       </View>
     </ScrollView>
     </>
