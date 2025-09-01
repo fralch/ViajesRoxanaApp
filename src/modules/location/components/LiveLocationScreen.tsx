@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 
-const LiveLocationScreen = () => {
+const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
@@ -193,7 +193,19 @@ const LiveLocationScreen = () => {
       <View style={styles.locationCard}>
         <View style={styles.locationHeader}>
           <Text style={styles.cardTitle}>Ubicación Actual</Text>
-          <TouchableOpacity style={styles.mapButton}>
+          <TouchableOpacity 
+            style={styles.mapButton}
+            onPress={() => {
+              if (navigation) {
+                navigation.navigate('MapScreen', {
+                  latitude: locationData.currentLocation.latitude,
+                  longitude: locationData.currentLocation.longitude,
+                  studentName: locationData.student.name,
+                  address: locationData.currentLocation.address
+                });
+              }
+            }}
+          >
             <Text style={styles.mapButtonText}>🗺️ Ver en Mapa</Text>
           </TouchableOpacity>
         </View>

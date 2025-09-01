@@ -12,6 +12,7 @@ import ProfileMainScreen from '../modules/profile/components/ProfileMainScreen';
 import TripsListScreen from '../modules/trips/components/TripsListScreen';
 import PaymentsListScreen from '../modules/payments/components/PaymentsListScreen';
 import LiveLocationScreen from '../modules/location/components/LiveLocationScreen';
+import MapScreen from '../modules/location/components/MapScreen';
 import WelcomeScreen from '../modules/authentication/components/WelcomeScreen';
 
 const Tab = createBottomTabNavigator();
@@ -112,6 +113,26 @@ function MainTabNavigator() {
   );
 }
 
+// Stack Navigator for Main App with Map Screen
+function MainStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+      <Stack.Screen 
+        name="MapScreen" 
+        component={MapScreen}
+        options={{
+          headerShown: true,
+          headerStyle: { backgroundColor: '#d62d28' },
+          headerTintColor: '#fff',
+          headerTitle: 'Mapa de Ubicación',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+    </Stack.Navigator>
+  );
+}
+
 // Root Stack Navigator (for authentication flow)
 function AppNavigator() {
   const isAuthenticated = false;
@@ -120,11 +141,11 @@ function AppNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isAuthenticated ? (
-          <Stack.Screen name="MainApp" component={MainTabNavigator} />
+          <Stack.Screen name="MainApp" component={MainStackNavigator} />
         ) : (
           <>
             <Stack.Screen name="Welcome" component={WelcomeScreen} />
-            <Stack.Screen name="MainApp" component={MainTabNavigator} />
+            <Stack.Screen name="MainApp" component={MainStackNavigator} />
           </>
         )}
       </Stack.Navigator>

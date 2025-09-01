@@ -81,7 +81,7 @@ const dropdownStyles = StyleSheet.create({
   separator: { height: 1, backgroundColor: '#eee' },
 });
 
-const DashboardScreen = () => {
+const DashboardScreen = ({ navigation }: { navigation?: any }) => {
   const userName = "Ana García";
 
   // === Datos por hijo ===
@@ -94,6 +94,11 @@ const DashboardScreen = () => {
         dates: "15-18 Marzo 2025",
         group: "Grupo Aventura",
         responsible: "Carlos Mendoza",
+      },
+      location: {
+        latitude: -13.1631,
+        longitude: -72.5450,
+        address: "Hotel Imperial Cusco, Av. Imperial 345, Cusco"
       },
       notifications: [
         { id: 'd1', type: "location", message: "Llegó seguro al hotel", time: "2 min" },
@@ -110,6 +115,11 @@ const DashboardScreen = () => {
         group: "Exploradores Norte",
         responsible: "María Torres",
       },
+      location: {
+        latitude: -9.0215,
+        longitude: -77.6283,
+        address: "Laguna 69, Huascarán National Park, Huaraz"
+      },
       notifications: [
         { id: 'l1', type: "location", message: "Inició caminata al mirador", time: "10 min" },
         { id: 'l2', type: "payment", message: "Pago de excursión confirmado", time: "30 min" },
@@ -124,9 +134,21 @@ const DashboardScreen = () => {
     [selectedChildId]
   );
 
+  // Función para navegar al mapa
+  const handleViewLocation = () => {
+    if (navigation) {
+      navigation.navigate('MapScreen', {
+        latitude: selectedChild.location.latitude,
+        longitude: selectedChild.location.longitude,
+        studentName: selectedChild.name,
+        address: selectedChild.location.address
+      });
+    }
+  };
+
   // Acciones rápidas (se mantienen, pero puedes usarlas con el contexto del hijo seleccionado)
   const quickActions = [
-    { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, screen: "Location" },
+    { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, action: handleViewLocation },
     { id: 2, title: "Perfil", icon: <FontAwesome  name="user" size={28} color="#d62d28" />, screen: "Profile" },
   ];
 
@@ -176,7 +198,11 @@ const DashboardScreen = () => {
         <Text style={styles.sectionTitle}>Acceso Rápido</Text>
         <View style={styles.actionsGrid}>
           {quickActions.map(action => (
-            <TouchableOpacity key={action.id} style={styles.actionButton}>
+            <TouchableOpacity 
+              key={action.id} 
+              style={styles.actionButton}
+              onPress={action.action || (() => {})}
+            >
               <Text style={styles.actionIcon}>{action.icon}</Text>
               <Text style={styles.actionTitle}>{action.title}</Text>
             </TouchableOpacity>

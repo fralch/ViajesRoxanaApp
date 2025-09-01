@@ -1,5 +1,7 @@
 // Location module exports
 export { default as LiveLocationScreen } from './components/LiveLocationScreen';
+export { default as MapScreen } from './components/MapScreen';
+export { default as Map } from './components/Map';
 
 // Types
 export interface LocationData {
