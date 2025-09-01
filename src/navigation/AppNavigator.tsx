@@ -75,7 +75,7 @@ function MainTabNavigator() {
       />
       <Tab.Screen 
         name="Trips" 
-        component={DashboardScreen}
+        component={TripsListScreen}
         options={{
           title: 'Viajes',
           tabBarIcon: ({ color, size }) => (
@@ -85,7 +85,7 @@ function MainTabNavigator() {
       />
       <Tab.Screen 
         name="Location" 
-        component={DashboardScreen}
+        component={LiveLocationScreen}
         options={{
           title: 'Ubicación',
           tabBarIcon: ({ color, size }) => (
@@ -95,7 +95,7 @@ function MainTabNavigator() {
       />
       <Tab.Screen 
         name="Payments" 
-        component={DashboardScreen}
+        component={PaymentsListScreen}
         options={{
           title: 'Pagos',
           tabBarIcon: ({ color, size }) => (
@@ -105,7 +105,7 @@ function MainTabNavigator() {
       />
       <Tab.Screen 
         name="Profile" 
-        component={DashboardScreen}
+        component={ProfileMainScreen}
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
