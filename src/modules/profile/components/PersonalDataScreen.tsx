@@ -1,589 +1,500 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import React, { useMemo, useState, useEffect, ReactNode } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Linking,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 
-const PersonalDataScreen = () => {
-  const [activeTab, setActiveTab] = useState('personal_info');
-  const [personalInfo, setPersonalInfo] = useState({
-    name: 'María José',
-    lastname: 'Rodríguez García',
-    photo: null,
-    document_type: 'DNI',
-    document_number: '12345678',
-    age: '16',
-    birth_date: '2008-03-15',
-    gender: 'Femenino',
-    address: 'Av. Los Olivos 123, San Isidro',
-    email: 'maria.rodriguez@email.com',
-    phone: '+51 999 123 456',
-    country: 'Perú'
+// ---- Interfaces ----
+interface PersonalInfo {
+  fullName: string;
+  document_number: string;
+  birth_date: string;
+  age: number;
+}
+
+interface AboutMe {
+  additional_info: string;
+}
+
+interface ChipProps {
+  icon: ReactNode;
+  label: string;
+  tone?: "default" | "primary" | "muted";
+}
+
+interface ReadonlyFieldProps {
+  label: string;
+  value: string;
+  icon?: ReactNode;
+}
+
+interface SectionProps {
+  title: string | ReactNode;
+  subtitle?: string;
+  right?: ReactNode;
+  children: ReactNode;
+}
+
+interface ContactRowProps {
+  index: number;
+  phone: string;
+  onCall: (phone: string) => void;
+  onWhats: (phone: string) => void;
+}
+
+// ---- Helpers UI/UX ----
+const PRIMARY = "#d62d28";
+const BG = "#0f0f10";
+const SURFACE = "#ffffff";
+const TEXT = "#111827";
+const SUBTEXT = "#6b7280";
+const MUTED = "#9ca3af";
+const CHIP = "#f3f4f6";
+const RADIUS = 16;
+
+const maskDocument = (doc: string = ""): string =>
+  doc.length > 4 ? `${doc.slice(0, doc.length - 4)}••••` : doc;
+
+const formatDateISO = (iso: string): string => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("es-PE", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  });
+};
+
+const normalizePhone = (p: string): string => p.replace(/[^\d+]/g, "");
+
+const callPhone = async (phone: string): Promise<void> => {
+  const url = `tel:${normalizePhone(phone)}`;
+  const supported = await Linking.canOpenURL(url);
+  if (supported) Linking.openURL(url);
+};
+
+const openWhatsApp = async (phone: string, text: string = "Hola 👋"): Promise<void> => {
+  const pure = normalizePhone(phone);
+  const wa = Platform.select({
+    ios: `https://wa.me/${pure}?text=${encodeURIComponent(text)}`,
+    android: `whatsapp://send?phone=${pure}&text=${encodeURIComponent(text)}`,
+    default: `https://wa.me/${pure}?text=${encodeURIComponent(text)}`,
+  });
+  const supported = await Linking.canOpenURL(wa);
+  if (supported) Linking.openURL(wa);
+};
+
+const Chip: React.FC<ChipProps> = ({ icon, label, tone = "default" }) => {
+  const palette =
+    tone === "primary"
+      ? { bg: "#fee2e2", text: "#991b1b" }
+      : tone === "muted"
+      ? { bg: "#f3f4f6", text: "#374151" }
+      : { bg: CHIP, text: "#111827" };
+  return (
+    <View style={[styles.chip, { backgroundColor: palette.bg }]}>
+      {icon}
+      <Text style={[styles.chipText, { color: palette.text }]}>{label}</Text>
+    </View>
+  );
+};
+
+const ReadonlyField: React.FC<ReadonlyFieldProps> = ({ label, value, icon }) => (
+  <View style={styles.field}>
+    <Text style={styles.fieldLabel}>{label}</Text>
+    <View style={styles.fieldBox}>
+      {icon ? <View style={styles.fieldIcon}>{icon}</View> : null}
+      <Text style={styles.fieldValue} numberOfLines={1}>
+        {value || "-"}
+      </Text>
+    </View>
+  </View>
+);
+
+const Section: React.FC<SectionProps> = ({ title, subtitle, right, children }) => (
+  <View style={styles.section}>
+    <View style={styles.sectionHeader}>
+      <View style={{ flex: 1 }}>
+        {typeof title === 'string' ? (
+          <Text style={styles.sectionTitle}>{title}</Text>
+        ) : (
+          title
+        )}
+        {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {right}
+    </View>
+    {children}
+  </View>
+);
+
+const ContactRow: React.FC<ContactRowProps> = ({ index, phone, onCall, onWhats }) => (
+  <View style={styles.contactRow}>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.inputLabel}>Contacto {index + 1}</Text>
+      <View style={styles.fieldBox}>
+        <View style={styles.fieldIcon}>
+          <Feather name="phone" size={18} color={MUTED} />
+        </View>
+        <Text style={styles.fieldValue}>{phone}</Text>
+      </View>
+    </View>
+
+    <View style={styles.actionsCol}>
+      <TouchableOpacity style={styles.quickBtn} onPress={() => onCall(phone)}>
+        <Ionicons name="call-outline" size={18} color={SURFACE} />
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.quickBtn, { backgroundColor: "#25D366" }]} onPress={() => onWhats(phone)}>
+        <Ionicons name="logo-whatsapp" size={18} color={SURFACE} />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+const PersonalDataScreen: React.FC = () => {
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    fullName: "María José Rodríguez García",
+    document_number: "12345678",
+    birth_date: "2008-03-15",
+    age: 16,
   });
 
-  const [emergencyContacts, setEmergencyContacts] = useState([
-    {
-      id: 1,
-      contact_name: 'Ana',
-      contact_lastname: 'García Morales',
-      contact_phone: '+51 999 654 321',
-      relationship: 'Madre'
-    },
-    {
-      id: 2,
-      contact_name: 'Carlos',
-      contact_lastname: 'Rodríguez Silva',
-      contact_phone: '+51 999 987 654',
-      relationship: 'Padre'
-    }
-  ]);
+  const [emergencyContacts] = useState<string[]>(["+51 999 654 321", "+51 999 987 654"]);
 
-  const [aboutMe, setAboutMe] = useState({
-    hobbies: 'Leer, dibujar, tocar guitarra',
-    sports: 'Voleibol, natación',
-    relational_attitude: 'Amigable y colaborativa',
-    additional_info: 'Le gusta participar en actividades grupales y ayudar a sus compañeros.'
+  const [aboutMe] = useState<AboutMe>({
+    additional_info:
+      "Le gusta participar en actividades grupales y ayudar a sus compañeros.",
   });
 
-  const tabs = [
-    { key: 'personal_info', label: 'Información Personal', icon: '👤' },
-    { key: 'emergency_contact', label: 'Contactos de Emergencia', icon: '🚨' },
-    { key: 'about_me', label: 'Acerca de Mí', icon: '💭' }
-  ];
-
-  const documentTypes = ['DNI', 'Carné de Extranjería', 'Pasaporte'];
-  const genders = ['Masculino', 'Femenino', 'Otro'];
-
-  const renderPersonalInfo = () => (
-    <View style={styles.tabContent}>
-      {/* Photo Section */}
-      <View style={styles.photoSection}>
-        <View style={styles.photoContainer}>
-          {personalInfo.photo ? (
-            <Text>Foto</Text>
-          ) : (
-            <Text style={styles.photoPlaceholder}>MJ</Text>
-          )}
-        </View>
-        <View style={styles.photoButtons}>
-          <TouchableOpacity style={styles.photoButton}>
-            <Text style={styles.photoButtonText}>📷 Cambiar Foto</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.photoButtonSecondary}>
-            <Text style={styles.photoButtonSecondaryText}>🗑️ Eliminar</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Form Fields */}
-      <View style={styles.formSection}>
-        <View style={styles.inputRow}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.inputLabel}>Nombre</Text>
-            <TextInput
-              style={styles.textInput}
-              value={personalInfo.name}
-              onChangeText={(text) => setPersonalInfo({...personalInfo, name: text})}
-            />
-          </View>
-          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.inputLabel}>Apellidos</Text>
-            <TextInput
-              style={styles.textInput}
-              value={personalInfo.lastname}
-              onChangeText={(text) => setPersonalInfo({...personalInfo, lastname: text})}
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputRow}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.inputLabel}>Tipo de Documento</Text>
-            <TouchableOpacity style={styles.pickerButton}>
-              <Text style={styles.pickerText}>{personalInfo.document_type}</Text>
-              <Text style={styles.pickerArrow}>▼</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.inputLabel}>Número de Documento</Text>
-            <TextInput
-              style={styles.textInput}
-              value={personalInfo.document_number}
-              onChangeText={(text) => setPersonalInfo({...personalInfo, document_number: text})}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        <View style={styles.inputRow}>
-          <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-            <Text style={styles.inputLabel}>Edad</Text>
-            <TextInput
-              style={styles.textInput}
-              value={personalInfo.age}
-              onChangeText={(text) => setPersonalInfo({...personalInfo, age: text})}
-              keyboardType="numeric"
-            />
-          </View>
-          <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-            <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-            <TouchableOpacity style={styles.pickerButton}>
-              <Text style={styles.pickerText}>{personalInfo.birth_date}</Text>
-              <Text style={styles.pickerArrow}>📅</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Género</Text>
-          <TouchableOpacity style={styles.pickerButton}>
-            <Text style={styles.pickerText}>{personalInfo.gender}</Text>
-            <Text style={styles.pickerArrow}>▼</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Dirección</Text>
-          <TextInput
-            style={[styles.textInput, styles.multilineInput]}
-            value={personalInfo.address}
-            onChangeText={(text) => setPersonalInfo({...personalInfo, address: text})}
-            multiline
-            numberOfLines={3}
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Email</Text>
-          <TextInput
-            style={styles.textInput}
-            value={personalInfo.email}
-            onChangeText={(text) => setPersonalInfo({...personalInfo, email: text})}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Teléfono</Text>
-          <TextInput
-            style={styles.textInput}
-            value={personalInfo.phone}
-            onChangeText={(text) => setPersonalInfo({...personalInfo, phone: text})}
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>País</Text>
-          <TouchableOpacity style={styles.pickerButton}>
-            <Text style={styles.pickerText}>{personalInfo.country}</Text>
-            <Text style={styles.pickerArrow}>▼</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <TouchableOpacity style={styles.saveButton}>
-        <Text style={styles.saveButtonText}>💾 Guardar Cambios</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderEmergencyContacts = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Contactos de Emergencia</Text>
-        <Text style={styles.sectionSubtitle}>Máximo 3 contactos</Text>
-      </View>
-
-      {emergencyContacts.map((contact, index) => (
-        <View key={contact.id} style={styles.contactCard}>
-          <View style={styles.contactHeader}>
-            <Text style={styles.contactTitle}>Contacto {index + 1}</Text>
-            <TouchableOpacity style={styles.deleteContactButton}>
-              <Text style={styles.deleteContactText}>🗑️</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputRow}>
-            <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-              <Text style={styles.inputLabel}>Nombre</Text>
-              <TextInput
-                style={styles.textInput}
-                value={contact.contact_name}
-                placeholder="Nombre del contacto"
-              />
-            </View>
-            <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.inputLabel}>Apellidos</Text>
-              <TextInput
-                style={styles.textInput}
-                value={contact.contact_lastname}
-                placeholder="Apellidos del contacto"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputRow}>
-            <View style={[styles.inputContainer, { flex: 1, marginRight: 8 }]}>
-              <Text style={styles.inputLabel}>Teléfono</Text>
-              <TextInput
-                style={styles.textInput}
-                value={contact.contact_phone}
-                placeholder="+51 999 123 456"
-                keyboardType="phone-pad"
-              />
-            </View>
-            <View style={[styles.inputContainer, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.inputLabel}>Parentesco</Text>
-              <TextInput
-                style={styles.textInput}
-                value={contact.relationship}
-                placeholder="Ej: Madre, Padre, Tío"
-              />
-            </View>
-          </View>
-        </View>
-      ))}
-
-      {emergencyContacts.length < 3 && (
-        <TouchableOpacity style={styles.addContactButton}>
-          <Text style={styles.addContactText}>➕ Agregar Nuevo Contacto</Text>
-        </TouchableOpacity>
-      )}
-
-      <TouchableOpacity style={styles.saveButton}>
-        <Text style={styles.saveButtonText}>💾 Guardar Contactos</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderAboutMe = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Acerca de Mí</Text>
-        <Text style={styles.sectionSubtitle}>Información opcional para conocerte mejor</Text>
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Hobbies e Intereses</Text>
-        <TextInput
-          style={[styles.textInput, styles.multilineInput]}
-          value={aboutMe.hobbies}
-          onChangeText={(text) => setAboutMe({...aboutMe, hobbies: text})}
-          placeholder="Describe tus hobbies favoritos..."
-          multiline
-          numberOfLines={3}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Deportes que Practicas</Text>
-        <TextInput
-          style={[styles.textInput, styles.multilineInput]}
-          value={aboutMe.sports}
-          onChangeText={(text) => setAboutMe({...aboutMe, sports: text})}
-          placeholder="¿Qué deportes te gustan?"
-          multiline
-          numberOfLines={3}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Actitud Relacional</Text>
-        <TextInput
-          style={[styles.textInput, styles.multilineInput]}
-          value={aboutMe.relational_attitude}
-          onChangeText={(text) => setAboutMe({...aboutMe, relational_attitude: text})}
-          placeholder="¿Cómo te relacionas con otros?"
-          multiline
-          numberOfLines={3}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Información Adicional</Text>
-        <TextInput
-          style={[styles.textInput, styles.multilineInput]}
-          value={aboutMe.additional_info}
-          onChangeText={(text) => setAboutMe({...aboutMe, additional_info: text})}
-          placeholder="Cualquier otra información que quieras compartir..."
-          multiline
-          numberOfLines={4}
-        />
-      </View>
-
-      <TouchableOpacity style={styles.saveButton}>
-        <Text style={styles.saveButtonText}>💾 Guardar Información</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'personal_info':
-        return renderPersonalInfo();
-      case 'emergency_contact':
-        return renderEmergencyContacts();
-      case 'about_me':
-        return renderAboutMe();
-      default:
-        return renderPersonalInfo();
-    }
+  // Calcular edad cuando cambie birth_date
+  const calcAge = (iso: string): number | null => {
+    if (!iso) return null;
+    const b = new Date(iso);
+    const t = new Date();
+    let age = t.getFullYear() - b.getFullYear();
+    const m = t.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && t.getDate() < b.getDate())) age--;
+    return age;
   };
+
+  useEffect(() => {
+    const newAge = calcAge(personalInfo.birth_date);
+    if (newAge !== null && newAge !== personalInfo.age) {
+      setPersonalInfo((p) => ({ ...p, age: newAge }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personalInfo.birth_date]);
+
+  const isMinor = useMemo(() => (personalInfo.age ?? 0) < 18, [personalInfo.age]);
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Datos Personales</Text>
-        <Text style={styles.subtitle}>Gestiona tu información personal</Text>
-      </View>
+      {/* Header mejorado */}
+      <LinearGradient
+        colors={[PRIMARY, "#b91c1c"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.headerTop}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {personalInfo.fullName
+                .split(" ")
+                .slice(0, 2)
+                .map((s) => s[0])
+                .join("")
+                .toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Datos Personales</Text>
+            <Text style={styles.subtitle}>Gestiona tu información personal</Text>
+          </View>
+        
+        </View>
 
-      {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {tabs.map(tab => (
-            <TouchableOpacity
-              key={tab.key}
-              style={[styles.tab, activeTab === tab.key && styles.activeTab]}
-              onPress={() => setActiveTab(tab.key)}
-            >
-              <Text style={styles.tabIcon}>{tab.icon}</Text>
-              <Text style={[styles.tabText, activeTab === tab.key && styles.activeTabText]}>
-                {tab.label}
-              </Text>
-            </TouchableOpacity>
+        <View style={styles.headerChips}>
+          <Chip
+            icon={<MaterialIcons name="badge" size={16} color="#991b1b" />}
+            label={`DNI ${maskDocument(personalInfo.document_number)}`}
+            tone="primary"
+          />
+          <Chip
+            icon={<Feather name="user" size={16} color="#374151" />}
+            label={`${personalInfo.age ?? "-"} años`}
+            tone={isMinor ? "primary" : "default"}
+          />
+        </View>
+      </LinearGradient>
+
+      {/* Contenido */}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
+        {/* Información Personal */}
+        <Section
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome name="user" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>Información Personal</Text>
+            </View>
+          )}
+          subtitle="Datos de identificación"
+          right={
+            <View style={styles.badgeRight}>
+              <Text style={styles.badgeRightText}>{isMinor ? "Menor de edad" : "Mayor de edad"}</Text>
+            </View>
+          }
+        >
+          <ReadonlyField
+            label="Nombre Completo"
+            value={personalInfo.fullName}
+            icon={<Feather name="user" size={18} color={MUTED} />}
+          />
+
+          <View style={styles.row}>
+            <View style={[styles.col, { marginRight: 8 }]}>
+              <ReadonlyField
+                label="Tipo de Documento"
+                value="DNI"
+                icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
+              />
+            </View>
+            <View style={[styles.col, { marginLeft: 8 }]}>
+              <ReadonlyField
+                label="Número de Documento"
+                value={maskDocument(personalInfo.document_number)}
+                icon={<Feather name="hash" size={18} color={MUTED} />}
+              />
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.col, { marginRight: 8 }]}>
+              <ReadonlyField
+                label="Fecha de Nacimiento"
+                value={new Date(personalInfo.birth_date).toLocaleDateString('es-PE', {
+                  day: '2-digit',
+                  month: '2-digit', 
+                  year: 'numeric'
+                })}
+                icon={<Feather name="calendar" size={18} color={MUTED} />}
+              />
+            </View>
+            <View style={[styles.col, { marginLeft: 8 }]}>
+              <ReadonlyField
+                label="Edad"
+                value={`${personalInfo.age ?? "-"} años`}
+                icon={<Feather name="hash" size={18} color={MUTED} />}
+              />
+            </View>
+          </View>
+        </Section>
+
+        {/* Contactos de Emergencia */}
+        <Section 
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome name="phone-square" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>Contactos de Emergencia</Text>
+            </View>
+          )} 
+          subtitle="Máximo 3 números telefónicos">
+          {emergencyContacts.map((c, i) => (
+            <ContactRow
+              key={i}
+              index={i}
+              phone={c}
+              onCall={callPhone}
+              onWhats={openWhatsApp}
+            />
           ))}
-        </ScrollView>
-      </View>
+          <TouchableOpacity
+            style={[styles.addBtn, emergencyContacts.length >= 3 && styles.addBtnDisabled]}
+            disabled={emergencyContacts.length >= 3}
+          >
+            <Ionicons name="add" size={18} color={SURFACE} />
+            <Text style={styles.addBtnText}>
+              {emergencyContacts.length >= 3 ? "Límite alcanzado" : "Agregar contacto"}
+            </Text>
+          </TouchableOpacity>
+        </Section>
 
-      {/* Content */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {renderTabContent()}
+        {/* Acerca de mí */}
+        <Section 
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome6 name="circle-info" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>Acerca de mí</Text>
+            </View>
+          )} 
+          subtitle="Información adicional y observaciones">
+          <View style={styles.noteBox}>
+            <Feather name="info" size={18} color={PRIMARY} />
+            <Text style={styles.noteText}>{aboutMe.additional_info}</Text>
+          </View>
+        </Section>
       </ScrollView>
     </View>
   );
 };
 
+// ---- Estilos ----
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
+  container: { flex: 1, backgroundColor: "#f6f7f8" },
+
   header: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-  },
-  tabsContainer: {
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 16,
     paddingHorizontal: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  headerTop: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 999,
+    backgroundColor: SURFACE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarText: { fontWeight: "800", color: PRIMARY },
+  title: { fontSize: 20, fontWeight: "800", color: SURFACE },
+  subtitle: { fontSize: 13, color: "#ffe4e6", marginTop: 2 },
+  editBtn: {
+    backgroundColor: SURFACE,
+    paddingHorizontal: 10,
     paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 12,
-    backgroundColor: '#f8f9fa',
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  activeTab: {
-    backgroundColor: '#d62d28',
+  editBtnText: { color: PRIMARY, fontWeight: "700" },
+
+  headerChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12,
   },
-  tabIcon: {
-    fontSize: 16,
+
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  chipText: { fontSize: 12, fontWeight: "700" },
+
+  scrollContainer: { flex: 1 },
+
+  section: {
+    backgroundColor: SURFACE,
+    borderRadius: RADIUS,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionHeader: { flexDirection: "row", alignItems: "flex-start", marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "800", color: TEXT },
+  sectionSubtitle: { fontSize: 13, color: SUBTEXT, marginTop: 4 },
+  badgeRight: {
+    backgroundColor: "#ecfccb",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+  },
+  badgeRightText: { color: "#3f6212", fontWeight: "700", fontSize: 12 },
+
+  row: { flexDirection: "row" },
+  col: { flex: 1 },
+
+  field: { marginBottom: 12 },
+  fieldLabel: { fontSize: 12, color: SUBTEXT, marginBottom: 6, fontWeight: "700" },
+  fieldBox: {
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#eef2f7",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  fieldIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#eef2f7",
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
   },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-  },
-  activeTabText: {
-    color: '#fff',
-  },
-  content: {
-    flex: 1,
-  },
-  tabContent: {
-    padding: 20,
-  },
-  photoSection: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  photoContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#e3f2fd',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  photoPlaceholder: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#d62d28',
-  },
-  photoButtons: {
-    flexDirection: 'row',
+  fieldValue: { fontSize: 15, color: TEXT, flex: 1 },
+
+  inputLabel: { fontSize: 12, color: SUBTEXT, marginBottom: 6, fontWeight: "700" },
+
+  // Contactos
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: 12,
+    marginBottom: 12,
   },
-  photoButton: {
-    backgroundColor: '#d62d28',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  photoButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  photoButtonSecondary: {
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  photoButtonSecondaryText: {
-    color: '#666',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  formSection: {
-    marginBottom: 20,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  inputContainer: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
+  actionsCol: { flexDirection: "row", gap: 8 },
+  quickBtn: {
+    backgroundColor: PRIMARY,
     paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  addBtn: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
     paddingVertical: 12,
-    fontSize: 16,
-    backgroundColor: '#fff',
-    color: '#333',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 4,
   },
-  multilineInput: {
-    textAlignVertical: 'top',
-    minHeight: 80,
+  addBtnDisabled: {
+    backgroundColor: "#e5e7eb",
   },
-  pickerButton: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  addBtnText: { color: SURFACE, fontWeight: "800" },
+
+  // Nota / About me
+  noteBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: "#fff7ed",
     borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
-  },
-  pickerText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  pickerArrow: {
-    fontSize: 12,
-    color: '#666',
-  },
-  sectionHeader: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: '#666',
-  },
-  contactCard: {
-    backgroundColor: '#fff',
+    borderColor: "#ffedd5",
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    padding: 12,
   },
-  contactHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  contactTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  deleteContactButton: {
-    padding: 4,
-  },
-  deleteContactText: {
-    fontSize: 16,
-  },
-  addContactButton: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 2,
-    borderColor: '#d62d28',
-    borderStyle: 'dashed',
-    borderRadius: 12,
-    paddingVertical: 20,
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  addContactText: {
-    fontSize: 16,
-    color: '#d62d28',
-    fontWeight: '600',
-  },
-  saveButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  noteText: { color: "#7c2d12", flex: 1, lineHeight: 20, fontSize: 14 },
 });
 
 export default PersonalDataScreen;

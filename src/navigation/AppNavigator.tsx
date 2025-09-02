@@ -8,7 +8,7 @@ import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
 
 // Import screens
 import DashboardScreen from '../modules/dashboard/components/DashboardScreen';
-import ProfileMainScreen from '../modules/profile/components/ProfileMainScreen';
+import PersonalDataScreen from '../modules/profile/components/PersonalDataScreen';
 import TripsListScreen from '../modules/trips/components/TripsListScreen';
 import PaymentsListScreen from '../modules/payments/components/PaymentsListScreen';
 import LiveLocationScreen from '../modules/location/components/LiveLocationScreen';
@@ -101,7 +101,7 @@ function MainTabNavigator() {
       />
       <Tab.Screen 
         name="Profile" 
-        component={ProfileMainScreen}
+        component={PersonalDataScreen}
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color, size }) => (

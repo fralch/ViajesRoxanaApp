@@ -18,7 +18,7 @@ export * from './navigation';
 
 // Re-export commonly used components
 export { default as DashboardScreen } from './modules/dashboard/components/DashboardScreen';
-export { default as ProfileMainScreen } from './modules/profile/components/ProfileMainScreen';
+export { default as ProfileMainScreen } from './modules/profile/components/PersonalDataScreen';
 export { default as TripsListScreen } from './modules/trips/components/TripsListScreen';
 export { default as PaymentsListScreen } from './modules/payments/components/PaymentsListScreen';
 export { default as LiveLocationScreen } from './modules/location/components/LiveLocationScreen';
