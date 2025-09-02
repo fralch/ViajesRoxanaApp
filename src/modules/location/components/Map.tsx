@@ -16,7 +16,7 @@ import {
   Vibration,
   ScrollView,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome, FontAwesome5, AntDesign, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -83,7 +83,6 @@ export const Map: React.FC<MapProps> = ({
   address,
 }) => {
   const insets = useSafeAreaInsets();
-  const [mapHtml, setMapHtml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [showDirectionsModal, setShowDirectionsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -91,78 +90,28 @@ export const Map: React.FC<MapProps> = ({
   const [shareModalScale] = useState(new Animated.Value(0));
   const [labelOpacity] = useState(new Animated.Value(0));
 
+  const initialRegion = {
+    latitude,
+    longitude,
+    latitudeDelta: 0.005,
+    longitudeDelta: 0.005,
+  };
+
   useEffect(() => {
-    // HTML de Leaflet sin mostrar lat/long en el popup
-    const html = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <title>Mapa de Ubicación</title>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-        <style>
-          * { box-sizing: border-box; }
-          body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-          #map { height: 100vh; width: 100vw; background: #fff; }
-          .leaflet-control-zoom a {
-            width: 34px; height: 34px; line-height: 34px; border-radius: 10px; font-weight: 700;
-          }
-          .leaflet-popup-content-wrapper {
-            border-radius: 14px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-          }
-          .leaflet-popup-content { margin: 12px 14px; }
-          .custom-popup { text-align: left; }
-          .popup-title { font-weight: 800; font-size: 16px; color: #111827; margin-bottom: 6px; }
-          .popup-address { font-size: 13px; color: #4b5563; line-height: 1.4; }
-        </style>
-      </head>
-      <body>
-        <div id="map"></div>
-        <script>
-          var map = L.map('map', {
-            zoomControl: true,
-            attributionControl: false,
-            tap: true,
-            touchZoom: true,
-            dragging: true
-          }).setView([${latitude}, ${longitude}], 18);
+    // Timeout para evitar loading infinito
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        Animated.timing(labelOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
+      }
+    }, 5000); // 5 segundos de timeout
 
-          var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19
-          }).addTo(map);
-
-          var customIcon = L.divIcon({
-            className: 'custom-div-icon',
-            html: '<div style="background: linear-gradient(135deg, #d62d28 0%, #b91c1c 100%); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid white; box-shadow: 0 4px 12px rgba(214, 45, 40, 0.35); animation: pulse 2s infinite;"><span style="color: white; font-size: 18px;">📍</span></div><style>@keyframes pulse {0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}</style>',
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
-          });
-
-          var marker = L.marker([${latitude}, ${longitude}], {icon: customIcon}).addTo(map);
-
-          var popupContent =
-            '<div class="custom-popup">'+
-              '<div class="popup-title">${studentName}</div>'+
-              ${address ? `'<div class="popup-address">${address.replace(/'/g, "\\'")}</div>' +` : "'' +"}
-            '</div>';
-
-          marker.bindPopup(popupContent, { maxWidth: 260 });
-          L.circle([${latitude}, ${longitude}], {
-            radius: 50, fillColor: '#d62d28', fillOpacity: 0.08, stroke: true, color: '#d62d28', weight: 2, opacity: 0.35
-          }).addTo(map);
-
-          map.doubleClickZoom.disable();
-        </script>
-      </body>
-      </html>
-    `;
-    setMapHtml(html);
-  }, [latitude, longitude, studentName, address]);
+    return () => clearTimeout(timeout);
+  }, [isLoading, labelOpacity]);
 
 
 
@@ -175,9 +124,8 @@ export const Map: React.FC<MapProps> = ({
     }).start();
   };
 
-  const handleMapLoad = () => {
+  const handleMapReady = () => {
     setIsLoading(false);
-    // Anima la aparición del label
     setTimeout(() => {
       Animated.timing(labelOpacity, {
         toValue: 1,
@@ -392,27 +340,56 @@ export const Map: React.FC<MapProps> = ({
 
       {/* Mapa */}
       <View style={styles.mapContainer}>
-        {mapHtml ? (
-          <WebView
-            source={{ html: mapHtml }}
-            style={styles.webView}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState={false}
-            scalesPageToFit={Platform.OS === 'android'}
-            onLoadEnd={handleMapLoad}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
+        <MapView
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          initialRegion={initialRegion}
+          onMapReady={handleMapReady}
+          onRegionChangeComplete={() => {
+            if (isLoading) {
+              setIsLoading(false);
+              setTimeout(() => {
+                Animated.timing(labelOpacity, {
+                  toValue: 1,
+                  duration: 500,
+                  useNativeDriver: true,
+                }).start();
+              }, 100);
+            }
+          }}
+          mapType="standard"
+        >
+          <Marker
+            coordinate={{ latitude, longitude }}
+            title={studentName}
+            description={address}
+          >
+            <View style={styles.customMarker}>
+              <LinearGradient
+                colors={[COLORS.primary, COLORS.primaryDark]}
+                style={styles.markerGradient}
+              >
+                <Ionicons name="location" size={20} color="white" />
+              </LinearGradient>
+            </View>
+          </Marker>
+
+          <Circle
+            center={{ latitude, longitude }}
+            radius={50}
+            fillColor={`${COLORS.primary}20`}
+            strokeColor={COLORS.primary}
+            strokeWidth={2}
           />
-        ) : null}
+        </MapView>
 
         {/* Loading overlay */}
         {isLoading && (
           <View style={styles.loadingOverlay}>
             <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.loadingGradient}>
               <ActivityIndicator size="large" color="white" />
-              <Text style={styles.loadingText}>Cargando mapa...</Text>
-              <Text style={styles.loadingSubtext}>Preparando ubicación</Text>
+              <Text style={styles.loadingText}>Cargando Google Maps...</Text>
+              <Text style={styles.loadingSubtext}>Configurando ubicación</Text>
             </LinearGradient>
           </View>
         )}
@@ -472,7 +449,26 @@ export const Map: React.FC<MapProps> = ({
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
   mapContainer: { flex: 1, position: 'relative' },
-  webView: { flex: 1 },
+  map: { flex: 1 },
+
+  customMarker: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerGradient: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: COLORS.white,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
 
   loadingOverlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
