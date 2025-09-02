@@ -146,10 +146,15 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     }
   };
 
+  // Función para navegar al perfil
+  const handleNavigateToProfile = () => {
+    navigation.navigate('Profile');
+  };
+
   // Acciones rápidas (se mantienen, pero puedes usarlas con el contexto del hijo seleccionado)
   const quickActions = [
     { id: 1, title: "Ver Ubicación", icon: <FontAwesome6 name="map-location-dot" size={28} color="#d62d28" />, action: handleViewLocation },
-    { id: 2, title: "Perfil", icon: <FontAwesome  name="user" size={28} color="#d62d28" />, screen: "Profile" },
+    { id: 2, title: "Perfil", icon: <FontAwesome  name="user" size={28} color="#d62d28" />, action: handleNavigateToProfile },
   ];
 
   return (

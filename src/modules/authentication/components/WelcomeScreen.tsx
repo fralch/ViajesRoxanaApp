@@ -76,9 +76,7 @@ const WelcomeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTab, setModalTab] = useState<'login' | 'register'>('login');
 
-  const handleGuestLogin = () => {
-    navigation.navigate('Login' as never);
-  };
+
 
   const handleLogin = () => {
     setModalTab('login');
@@ -142,10 +140,7 @@ const WelcomeScreen = () => {
         </TouchableOpacity>
          */}
 
-        <TouchableOpacity onPress={handleGuestLogin} hitSlop={16}>
-          <Text style={styles.skipText}>Explorar como invitado</Text>
-        </TouchableOpacity>
-
+       
         <Text style={styles.legalText}>
           Al continuar, aceptas nuestros{' '}
           <Text style={styles.link}>Términos de Servicio</Text> y{' '}

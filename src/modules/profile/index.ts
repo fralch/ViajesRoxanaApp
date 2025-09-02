@@ -1,6 +1,8 @@
 // Profile module exports
-export { default as ProfileMainScreen } from './components/ProfileMainScreen';
 export { default as PersonalDataScreen } from './components/PersonalDataScreen';
+
+// Main profile screen export (now points to PersonalDataScreen)
+export { default as ProfileMainScreen } from './components/PersonalDataScreen';
 
 // Types
 export interface ProfileData {
