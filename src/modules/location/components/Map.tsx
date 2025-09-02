@@ -487,14 +487,14 @@ const styles = StyleSheet.create({
 
   mapLabel: {
     position: 'absolute',
-    top: 60,
+    bottom: SPACING.large,
     left: SPACING.medium,
     right: SPACING.medium,
     borderRadius: BORDER_RADIUS.large,
     overflow: 'hidden',
     elevation: 12,
     shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
   },
