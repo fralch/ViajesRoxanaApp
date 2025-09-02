@@ -28,11 +28,17 @@
         "googleMaps": {
           "apiKey": ""
         }
-      }
+      },
+      "package": "com.fralch.ViajesRoxana"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": []
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "be934916-b0cb-43e4-8888-07b3c39f454b"
+      }
+    }
   }
 }
