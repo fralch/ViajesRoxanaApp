@@ -20,7 +20,7 @@ import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome, FontAwesome5, AntDesign, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { PanResponder, PanResponderInstance } from 'react-native';
+
 
 // --- Design System refinado ---
 const COLORS = {
@@ -87,29 +87,9 @@ export const Map: React.FC<MapProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [showDirectionsModal, setShowDirectionsModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [panelHeight] = useState(new Animated.Value(0));
-  const [isPanelExpanded, setIsPanelExpanded] = useState(false);
   const [modalScale] = useState(new Animated.Value(0));
   const [shareModalScale] = useState(new Animated.Value(0));
-  const [scrolled, setScrolled] = useState(false);
-  const [panelHeightValue, setPanelHeightValue] = useState(0);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  const PEEK_HEIGHT = Math.round(Math.max(height * 0.20, 120));
-  const MID_HEIGHT = Math.round(Math.max(height * 0.40, 220));
-  const MAX65 = Math.round(height * 0.65);
-  const TALL_MAX = Math.round(Math.min(height * 0.70, 560));
-  const SNAP_POINTS_BASE = [0, PEEK_HEIGHT, MID_HEIGHT, MAX65];
-  const SNAP_POINTS = height >= 780 ? [...SNAP_POINTS_BASE, TALL_MAX] : SNAP_POINTS_BASE;
-  const MAX_HEIGHT = SNAP_POINTS[SNAP_POINTS.length - 1];
-  const heightRef = useRef(0);
-  useEffect(() => {
-    const id = panelHeight.addListener(({ value }) => {
-      heightRef.current = value;
-      setPanelHeightValue(value);
-    });
-    return () => panelHeight.removeListener(id);
-  }, [panelHeight]);
+  const [labelOpacity] = useState(new Animated.Value(0));
 
   useEffect(() => {
     // HTML de Leaflet sin mostrar lat/long en el popup
@@ -184,61 +164,7 @@ export const Map: React.FC<MapProps> = ({
     setMapHtml(html);
   }, [latitude, longitude, studentName, address]);
 
-  const animateTo = (toValue: number) => {
-    setIsPanelExpanded(toValue === MAX_HEIGHT);
-    setIsPanelOpen(toValue > 0);
-    Animated.spring(panelHeight, {
-      toValue,
-      useNativeDriver: false,
-      tension: 120,
-      friction: 12,
-    }).start();
-  };
 
-  const animatePanel = (expand: boolean) => {
-    const toValue = expand ? MAX_HEIGHT : 0;
-    animateTo(toValue);
-  };
-
-  const nearestSnap = (val: number) => {
-    let nearest = SNAP_POINTS[0];
-    let minDiff = Math.abs(val - nearest);
-    for (const p of SNAP_POINTS) {
-      const d = Math.abs(val - p);
-      if (d < minDiff) {
-        minDiff = d;
-        nearest = p;
-      }
-    }
-    return nearest;
-  };
-
-  const startHeightRef = useRef(0);
-  const panResponder = useRef<PanResponderInstance>(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 6,
-      onPanResponderGrant: () => {
-        startHeightRef.current = heightRef.current;
-      },
-      onPanResponderMove: (_, gesture) => {
-        const next = Math.max(0, Math.min(MAX_HEIGHT, startHeightRef.current - gesture.dy));
-        panelHeight.setValue(next);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        const current = heightRef.current;
-        const velocity = gesture.vy; // + down, - up
-        let target = nearestSnap(current);
-        const idx = SNAP_POINTS.indexOf(target);
-        if (velocity < -0.6 && idx < SNAP_POINTS.length - 1) {
-          target = SNAP_POINTS[idx + 1];
-        } else if (velocity > 0.6 && idx > 0) {
-          target = SNAP_POINTS[idx - 1];
-        }
-        animateTo(target);
-      },
-    })
-  ).current;
 
   const animateModal = (show: boolean, scaleValue: Animated.Value) => {
     Animated.spring(scaleValue, {
@@ -251,8 +177,14 @@ export const Map: React.FC<MapProps> = ({
 
   const handleMapLoad = () => {
     setIsLoading(false);
-    // Abre el panel automáticamente la primera vez
-    setTimeout(() => animateTo(MID_HEIGHT), 250);
+    // Anima la aparición del label
+    setTimeout(() => {
+      Animated.timing(labelOpacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }, 250);
   };
 
   const handleShareLocation = () => {
@@ -486,80 +418,51 @@ export const Map: React.FC<MapProps> = ({
         )}
       </View>
 
-      {/* Panel flotante */}
-      <Animated.View style={[styles.floatingPanel, isPanelOpen ? styles.floatingPanelOpen : null, { height: panelHeight }]}>
-        <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.panelGradient}>
-          <ScrollView
-            style={styles.panelContainer}
-            contentContainerStyle={[
-              styles.panelContent,
-              { paddingBottom: Math.max(insets.bottom, SPACING.large) },
-            ]}
-            stickyHeaderIndices={[1]}
-            showsVerticalScrollIndicator={true}
-            indicatorStyle={Platform.OS === 'ios' ? 'black' : undefined}
-            keyboardDismissMode="on-drag"
-            keyboardShouldPersistTaps="handled"
-            scrollEventThrottle={16}
-            onScroll={(e) => {
-              const y = e.nativeEvent.contentOffset.y;
-              if (y > 2 && !scrolled) setScrolled(true);
-              if (y <= 2 && scrolled) setScrolled(false);
-            }}
-            bounces
-          >
-            {/* Handle tocable para expandir/contraer */}
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel={isPanelExpanded ? 'Contraer panel' : 'Expandir panel'}
-              hitSlop={{ top: 12, bottom: 12, left: 24, right: 24 }}
-              style={styles.dragHandle}
-              activeOpacity={0.7}
-              onPress={() => animatePanel(!isPanelExpanded)}
-              {...panResponder.panHandlers}
-            />
-
-            <View style={[styles.panelHeader, scrolled && styles.panelHeaderScrolled]} {...panResponder.panHandlers}> 
-              <View style={styles.studentInfo}>
-                <View style={styles.studentNameContainer}>
-                  <View style={styles.avatarContainer}>
-                    <Ionicons name="person" size={18} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.studentName}>{studentName}</Text>
+      {/* Label superpuesto en el mapa */}
+      <Animated.View style={[styles.mapLabel, { opacity: labelOpacity }]}>
+        <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.labelGradient}>
+          <View style={styles.labelContent}>
+            <View style={styles.studentInfo}>
+              <View style={styles.studentNameContainer}>
+                <View style={styles.avatarContainer}>
+                  <Ionicons name="person" size={18} color={COLORS.primary} />
                 </View>
-
-                {address && (
-                  <View style={styles.addressContainer}>
-                    <Ionicons name="home" size={14} color={COLORS.textSecondary} />
-                    <Text style={styles.address}>{address}</Text>
-                  </View>
-                )}
+                <Text style={styles.studentName}>{studentName}</Text>
               </View>
+
+              {address && (
+                <View style={styles.addressContainer}>
+                  <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                  <Text style={styles.addressText}>{address}</Text>
+                </View>
+              )}
             </View>
-
-            {/* Hint de gesto */}
-            {panelHeightValue < MAX_HEIGHT && !scrolled && (
-              <View style={styles.gestureHint}>
-                <Ionicons name="swap-vertical" size={16} color={COLORS.textMuted} />
-                <Text style={styles.gestureHintText}>Desliza para expandir</Text>
-              </View>
-            )}
-
-            {/* Acciones */}
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={[styles.actionButton, styles.primaryButton]} onPress={handleGetDirections} activeOpacity={0.9}>
-                <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.buttonGradient}>
+            
+            {/* Botones de acción */}
+            <View style={styles.labelActions}>
+              <TouchableOpacity
+                style={styles.labelActionButton}
+                onPress={handleGetDirections}
+                activeOpacity={0.85}
+              >
+                <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.labelButtonGradient}>
                   <Ionicons name="navigate" size={18} color="white" />
-                  <Text style={styles.primaryButtonText}>Direcciones</Text>
+                  <Text style={styles.labelButtonText}>Direcciones</Text>
                 </LinearGradient>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.actionButton, styles.secondaryButton]} onPress={handleShareLocation} activeOpacity={0.9}>
-                <Ionicons name="share-outline" size={18} color={COLORS.primary} />
-                <Text style={styles.secondaryButtonText}>Compartir</Text>
+              <TouchableOpacity
+                style={styles.labelActionButton}
+                onPress={handleShareLocation}
+                activeOpacity={0.85}
+              >
+                <View style={styles.labelSecondaryButton}>
+                  <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+                  <Text style={styles.labelSecondaryButtonText}>Compartir</Text>
+                </View>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </View>
         </LinearGradient>
       </Animated.View>
     </View>
@@ -568,96 +471,64 @@ export const Map: React.FC<MapProps> = ({
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  mapContainer: { flex: 1 },
-  webView: { flex: 1, backgroundColor: 'transparent' },
+  mapContainer: { flex: 1, position: 'relative' },
+  webView: { flex: 1 },
 
-  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center' },
-  loadingGradient: { flex: 1, width: '100%', justifyContent: 'center', alignItems: 'center' },
-  loadingText: { fontSize: FONT_SIZES.xlarge, color: COLORS.white, marginTop: SPACING.medium, fontWeight: '700' },
+  loadingOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  loadingGradient: {
+    paddingVertical: SPACING.xxlarge, paddingHorizontal: SPACING.xlarge,
+    borderRadius: BORDER_RADIUS.large, alignItems: 'center', gap: SPACING.medium,
+  },
+  loadingText: { fontSize: FONT_SIZES.xlarge, fontWeight: '700', color: COLORS.white },
   loadingSubtext: { fontSize: FONT_SIZES.medium, color: COLORS.white, marginTop: SPACING.small, opacity: 0.85 },
 
-  floatingPanel: {
+  mapLabel: {
     position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    borderTopLeftRadius: BORDER_RADIUS.xlarge,
-    borderTopRightRadius: BORDER_RADIUS.xlarge,
+    top: 60,
+    left: SPACING.medium,
+    right: SPACING.medium,
+    borderRadius: BORDER_RADIUS.large,
     overflow: 'hidden',
-    elevation: 18,
+    elevation: 12,
     shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
-  floatingPanelOpen: {
-    elevation: 25,
-    shadowOpacity: 0.18,
-    shadowRadius: 16,
+  labelGradient: { width: '100%' },
+  labelContent: {
+    padding: SPACING.large,
   },
-  panelGradient: { width: '100%', height: '100%' },
-  panelContainer: { flex: 1 },
-  panelContent: {
-    paddingHorizontal: SPACING.xlarge,
-    paddingTop: SPACING.medium,
-    minHeight: 220,
-  },
-  dragHandle: {
-    width: 46, height: 6, borderRadius: 999,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-    marginVertical: SPACING.medium,
-  },
-
-  panelHeader: { marginBottom: SPACING.large, backgroundColor: COLORS.white },
-  panelHeaderScrolled: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.border,
-  },
-  gestureHint: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.small,
-    alignSelf: 'center',
-    marginTop: -SPACING.small,
-    marginBottom: SPACING.small,
-  },
-  gestureHintText: {
-    fontSize: FONT_SIZES.small,
-    color: COLORS.textMuted,
-  },
-  studentInfo: { gap: SPACING.medium },
-  studentNameContainer: { flexDirection: 'row', alignItems: 'center' },
+  studentInfo: { gap: SPACING.small },
+  studentNameContainer: { flexDirection: 'row', alignItems: 'center', gap: SPACING.medium },
   avatarContainer: {
-    width: 36, height: 36, borderRadius: 999,
-    backgroundColor: COLORS.primaryLight, justifyContent: 'center', alignItems: 'center',
-    marginRight: SPACING.medium,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: COLORS.primaryLight,
+    alignItems: 'center', justifyContent: 'center',
   },
-  studentName: { fontSize: FONT_SIZES.xxxlarge, fontWeight: '800', color: COLORS.textPrimary },
+  studentName: { fontSize: FONT_SIZES.xlarge, fontWeight: '800', color: COLORS.textPrimary, flex: 1 },
 
   addressContainer: { flexDirection: 'row', alignItems: 'center', gap: SPACING.small },
-  address: { fontSize: FONT_SIZES.medium, color: COLORS.textSecondary, lineHeight: 20, flex: 1 },
+  addressText: { fontSize: FONT_SIZES.small, color: COLORS.textSecondary, lineHeight: 18, flex: 1 },
 
-  actionButtons: { flexDirection: 'row', gap: SPACING.medium, marginTop: SPACING.medium, paddingTop: SPACING.small },
-  actionButton: { flex: 1, borderRadius: BORDER_RADIUS.medium, overflow: 'hidden' },
-
-  primaryButton: {
-    elevation: 4,
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-  },
-  buttonGradient: {
+  labelActions: { flexDirection: 'row', gap: SPACING.small, marginTop: SPACING.medium },
+  labelActionButton: { flex: 1, borderRadius: BORDER_RADIUS.small, overflow: 'hidden' },
+  labelButtonGradient: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: SPACING.large, paddingHorizontal: SPACING.xlarge, gap: SPACING.small,
+    paddingVertical: SPACING.medium, paddingHorizontal: SPACING.large, gap: SPACING.xs,
   },
-  secondaryButton: {
+  labelSecondaryButton: {
     backgroundColor: COLORS.surface,
-    borderWidth: 2, borderColor: COLORS.borderLight,
+    borderWidth: 1, borderColor: COLORS.border,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    paddingVertical: SPACING.large, paddingHorizontal: SPACING.xlarge, gap: SPACING.small,
+    paddingVertical: SPACING.medium, paddingHorizontal: SPACING.large, gap: SPACING.xs,
+    borderRadius: BORDER_RADIUS.small,
   },
-  primaryButtonText: { fontSize: FONT_SIZES.large, fontWeight: '700', color: COLORS.white },
-  secondaryButtonText: { fontSize: FONT_SIZES.large, fontWeight: '700', color: COLORS.primary },
+  labelButtonText: { fontSize: FONT_SIZES.medium, fontWeight: '600', color: COLORS.white },
+  labelSecondaryButtonText: { fontSize: FONT_SIZES.medium, fontWeight: '600', color: COLORS.primary },
 
   // Modales
   modalOverlay: {
