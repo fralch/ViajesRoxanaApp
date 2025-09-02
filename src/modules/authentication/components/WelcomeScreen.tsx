@@ -191,29 +191,25 @@ const styles = StyleSheet.create({
   featureCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    padding: 10,         // 🔥 más compacto
-    marginBottom: 8,     // 🔥 menos espacio
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    backgroundColor: 'transparent',
+    padding: 12,
+    marginBottom: 10,
+    borderRadius: 0
   },
   featureIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#fff0f0',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(214, 45, 40, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
   },
   featureText: {
-    fontSize: FONT_SIZES.small, // 🔥 texto más compacto
-    color: COLORS.textPrimary,
+    fontSize: FONT_SIZES.medium,
+    color: COLORS.textSecondary,
     flex: 1,
+    fontWeight: '400',
   },
   footer: {
     paddingHorizontal: 24,
