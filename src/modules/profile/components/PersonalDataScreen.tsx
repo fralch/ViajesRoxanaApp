@@ -309,22 +309,6 @@ const PersonalDataScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
             icon={<Feather name="user" size={18} color={MUTED} />}
           />
 
-          {user?.email && (
-            <ReadonlyField
-              label="Correo Electrónico"
-              value={user.email}
-              icon={<Feather name="mail" size={18} color={MUTED} />}
-            />
-          )}
-
-          {user?.phone && (
-            <ReadonlyField
-              label="Teléfono"
-              value={user.phone}
-              icon={<Feather name="phone" size={18} color={MUTED} />}
-            />
-          )}
-
           {!isChildProfile && (
             <>
               <ReadonlyField

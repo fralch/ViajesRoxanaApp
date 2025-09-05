@@ -248,13 +248,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
         <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>¡Hola, {userName}!</Text>
           <Text style={styles.subGreeting}>{isAdmin ? "Administrador" : "Bienvenido"}</Text>
-          
-          {/* Información del usuario padre */}
-          <View style={styles.userInfo}>
-            {userEmail ? <Text style={styles.userDetail}>📧 {userEmail}</Text> : null}
-            {userPhone ? <Text style={styles.userDetail}>📱 {userPhone}</Text> : null}
-            {userDni ? <Text style={styles.userDetail}>🆔 DNI: {userDni}</Text> : null}
-          </View>
+        
 
           {/* Select de hijo */}
           {children.length > 0 && (
