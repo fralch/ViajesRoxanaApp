@@ -42,7 +42,7 @@ export interface LiveLocationData {
     signalStrength: number;
   };
   recentActivities: RecentActivity[];
-  emergencyContacts: EmergencyContact[];
+  emergencyContacts: LocationEmergencyContact[];
 }
 
 export interface RecentActivity {
@@ -54,7 +54,7 @@ export interface RecentActivity {
   notes?: string;
 }
 
-export interface EmergencyContact {
+export interface LocationEmergencyContact {
   id: number;
   name: string;
   role: string;

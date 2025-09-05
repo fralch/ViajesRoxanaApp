@@ -21,7 +21,7 @@ const CustomButton: React.FC<ButtonProps> = ({
   icon
 }) => {
   const getButtonStyle = () => {
-    const baseStyle = [styles.button, styles[size]];
+    const baseStyle: any[] = [styles.button, styles[size]];
     
     if (disabled || loading) {
       baseStyle.push(styles.disabled);
@@ -33,7 +33,7 @@ const CustomButton: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = () => {
-    const baseStyle = [styles.text, styles[`${size}Text`]];
+    const baseStyle: any[] = [styles.text, styles[`${size}Text` as keyof typeof styles]];
     
     if (variant === 'outline') {
       baseStyle.push(styles.outlineText);

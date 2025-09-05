@@ -11,6 +11,8 @@ export { default as ProgressBar } from './ProgressBar';
 export { default as Card } from './Card';
 export { default as Avatar } from './Avatar';
 export { default as TabBar } from './TabBar';
+// UserProfile moved to hooks as useUserProfile
+// AuthExample removed - functionality integrated into useAuth hook
 
 // Component prop types
 export interface ButtonProps {

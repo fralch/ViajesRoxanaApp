@@ -1,4 +1,5 @@
 // Shared utility functions
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Date formatting utilities
 export const formatDate = (date: string | Date, format: 'short' | 'long' | 'time' = 'short'): string => {
@@ -160,8 +161,7 @@ export const storage = {
   set: async (key: string, value: any): Promise<void> => {
     try {
       const jsonValue = JSON.stringify(value);
-      // In React Native, use AsyncStorage
-      // await AsyncStorage.setItem(key, jsonValue);
+      await AsyncStorage.setItem(key, jsonValue);
     } catch (error) {
       console.error('Error saving to storage:', error);
     }
@@ -169,10 +169,8 @@ export const storage = {
   
   get: async (key: string): Promise<any> => {
     try {
-      // In React Native, use AsyncStorage
-      // const jsonValue = await AsyncStorage.getItem(key);
-      // return jsonValue != null ? JSON.parse(jsonValue) : null;
-      return null;
+      const jsonValue = await AsyncStorage.getItem(key);
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
     } catch (error) {
       console.error('Error reading from storage:', error);
       return null;
@@ -181,8 +179,7 @@ export const storage = {
   
   remove: async (key: string): Promise<void> => {
     try {
-      // In React Native, use AsyncStorage
-      // await AsyncStorage.removeItem(key);
+      await AsyncStorage.removeItem(key);
     } catch (error) {
       console.error('Error removing from storage:', error);
     }

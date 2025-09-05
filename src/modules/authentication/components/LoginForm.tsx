@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../../shared/hooks';
 
 interface LoginFormProps {
   onClose: () => void;
@@ -16,26 +17,28 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
   const navigation = useNavigation();
+  const { login, isLoading } = useAuth();
   const [emailPhone, setEmailPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
     if (!emailPhone || !password) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
-    setIsLoading(true);
+    
     try {
-      await new Promise(r => setTimeout(r, 1200));
+      await login({
+        emailPhone,
+        password,
+        remember,
+      });
       onClose();
       navigation.navigate('MainApp' as never);
-    } catch {
-      Alert.alert('Error', 'Credenciales incorrectas');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      Alert.alert('Error', error instanceof Error ? error.message : 'Credenciales incorrectas');
     }
   };
 

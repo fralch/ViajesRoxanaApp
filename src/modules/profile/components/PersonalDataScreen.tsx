@@ -11,6 +11,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
+import { useAuth } from '../../../shared/hooks';
+import { formatDate } from '../../../shared/utils';
 
 // ---- Interfaces ----
 interface PersonalInfo {
@@ -161,19 +163,34 @@ const ContactRow: React.FC<ContactRowProps> = ({ index, phone, onCall, onWhats }
 );
 
 const PersonalDataScreen: React.FC = () => {
+  const { user, isAuthenticated } = useAuth();
+  
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: "María José Rodríguez García",
-    document_number: "12345678",
-    birth_date: "2008-03-15",
-    age: 16,
+    fullName: user?.name && user?.lastname ? `${user.name} ${user.lastname}` : "Usuario",
+    document_number: "12345678", // Este campo no está en el contexto, mantener como ejemplo
+    birth_date: "2008-03-15", // Este campo no está en el contexto, mantener como ejemplo
+    age: 16, // Calculado desde birth_date
   });
 
-  const [emergencyContacts] = useState<string[]>(["+51 999 654 321", "+51 999 987 654"]);
+  const [emergencyContacts] = useState<string[]>([
+    user?.phone || "+51 999 654 321", 
+    "+51 999 987 654" // Contacto de emergencia adicional
+  ]);
 
   const [aboutMe] = useState<AboutMe>({
     additional_info:
       "Le gusta participar en actividades grupales y ayudar a sus compañeros.",
   });
+
+  // Actualizar información personal cuando cambie el usuario
+  useEffect(() => {
+    if (user) {
+      setPersonalInfo(prev => ({
+        ...prev,
+        fullName: user.name && user.lastname ? `${user.name} ${user.lastname}` : "Usuario"
+      }));
+    }
+  }, [user]);
 
   // Calcular edad cuando cambie birth_date
   const calcAge = (iso: string): number | null => {
@@ -234,6 +251,13 @@ const PersonalDataScreen: React.FC = () => {
             label={`${personalInfo.age ?? "-"} años`}
             tone={isMinor ? "primary" : "default"}
           />
+          {user && (
+            <Chip
+              icon={<Feather name={user.is_active ? "check-circle" : "x-circle"} size={16} color={user.is_active ? "#059669" : "#dc2626"} />}
+              label={user.is_active ? "Activo" : "Inactivo"}
+              tone={user.is_active ? "default" : "primary"}
+            />
+          )}
         </View>
       </LinearGradient>
 
@@ -259,6 +283,22 @@ const PersonalDataScreen: React.FC = () => {
             value={personalInfo.fullName}
             icon={<Feather name="user" size={18} color={MUTED} />}
           />
+
+          {user?.email && (
+            <ReadonlyField
+              label="Correo Electrónico"
+              value={user.email}
+              icon={<Feather name="mail" size={18} color={MUTED} />}
+            />
+          )}
+
+          {user?.role && (
+            <ReadonlyField
+              label="Rol"
+              value={user.role}
+              icon={<Feather name="shield" size={18} color={MUTED} />}
+            />
+          )}
 
           <View style={styles.row}>
             <View style={[styles.col, { marginRight: 8 }]}>

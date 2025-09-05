@@ -17,7 +17,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   showPercentage = false
 }) => {
   const clampedProgress = Math.max(0, Math.min(100, progress));
-  const progressWidth = `${clampedProgress}%`;
+  const progressWidth = `${clampedProgress}%` as const;
 
   return (
     <View style={styles.container}>

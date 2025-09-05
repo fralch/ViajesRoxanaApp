@@ -5,6 +5,8 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
+import { useAuth } from '../shared/hooks';
+import { LoadingSpinner } from '../shared/components';
 
 // Import screens
 import DashboardScreen from '../modules/dashboard/components/DashboardScreen';
@@ -135,7 +137,16 @@ function MainStackNavigator() {
 
 // Root Stack Navigator (for authentication flow)
 function AppNavigator() {
-  const isAuthenticated = false;
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // Mostrar loading mientras se verifica la autenticación
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <LoadingSpinner />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>

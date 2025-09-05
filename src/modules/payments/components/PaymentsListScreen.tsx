@@ -115,8 +115,8 @@ const PaymentsListScreen = () => {
 
   const renderPaymentCard = ({ item }: { item: any }) => {
     const completionPercentage = (item.paidAmount / item.totalAmount) * 100;
-    const nextDueInstallment = item.installments.find(inst => inst.status === 'pending');
-    const daysUntilDue = nextDueInstallment ? getDaysUntilDue(nextDueInstallment.dueDate) : null;
+    const nextDueInstallment = item.installments.find((inst: any) => inst.status === 'pending');
+    const daysUntilDue = nextDueInstallment && nextDueInstallment.dueDate ? getDaysUntilDue(nextDueInstallment.dueDate) : null;
 
     return (
       <TouchableOpacity style={styles.paymentCard}>
