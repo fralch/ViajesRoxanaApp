@@ -3,6 +3,66 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, 
 import { FontAwesome, FontAwesome6, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../shared/hooks';
 
+// Types for API data
+interface Child {
+  id: number;
+  user_id: number;
+  nombres: string;
+  doc_tipo: string;
+  doc_numero: string;
+  nums_emergencia: string[];
+  fecha_nacimiento: string;
+  foto: string | null;
+  pasatiempos: string | null;
+  deportes: string | null;
+  plato_favorito: string | null;
+  color_favorito: string | null;
+  informacion_adicional: string | null;
+  created_at: string;
+  updated_at: string;
+  inscripciones: Inscription[];
+}
+
+interface Inscription {
+  id: number;
+  hijo_id: number;
+  paquete_id: number;
+  grupo_id: number;
+  usuario_id: number;
+  created_at: string;
+  updated_at: string;
+  grupo: Group;
+}
+
+interface Group {
+  id: number;
+  paquete_id: number;
+  nombre: string;
+  fecha_inicio: string;
+  fecha_fin: string;
+  capacidad: number;
+  tipo_encargado: string[];
+  nombre_encargado: string[];
+  celular_encargado: string[];
+  tipo_encargado_agencia: string[];
+  nombre_encargado_agencia: string[];
+  celular_encargado_agencia: string[];
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+  paquete: Package;
+}
+
+interface Package {
+  id: number;
+  nombre: string;
+  destino: string;
+  descripcion: string;
+  activo: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Dropdown simple sin librerías ---
 const Dropdown = ({
   label,
@@ -110,59 +170,49 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
   const userDni = user?.dni || "";
   const isAdmin = user?.is_admin || false;
 
-  // === Datos por hijo ===
-  const children = [
-    {
-      id: 'h1',
-      name: 'Diego García',
+  // === Datos de los hijos del usuario ===
+  const rawChildren: Child[] = (user?.hijos as Child[]) || [];
+  
+  // Transform API data to component format
+  const children = rawChildren.map((child) => {
+    const activeInscription = child.inscripciones?.[0]; // Get first/active inscription
+    const group = activeInscription?.grupo;
+    const pkg = group?.paquete;
+    
+    return {
+      id: child.id.toString(),
+      name: child.nombres,
       trip: {
-        destination: "Cusco - Machu Picchu",
-        dates: "15-18 Marzo 2025",
-        group: "Grupo Aventura",
-        responsible: "Carlos Mendoza",
+        destination: pkg?.destino || "Sin destino asignado",
+        dates: group ? `${group.fecha_inicio} - ${group.fecha_fin}` : "Sin fechas",
+        group: group?.nombre || "Sin grupo asignado",
+        responsible: group?.nombre_encargado?.[0] || group?.nombre_encargado_agencia?.[0] || "Sin responsable",
       },
       location: {
-        latitude: -13.1631,
-        longitude: -72.5450,
-        address: "Hotel Imperial Cusco, Av. Imperial 345, Cusco"
+        // Default location - in real app this would come from real-time data
+        latitude: -12.0464,
+        longitude: -77.0428,
+        address: "Lima, Peru" // Default location
       },
       notifications: [
-        { id: 'd1', type: "location", message: "Llegó seguro al hotel", time: "2 min" },
-        { id: 'd2', type: "medical", message: "Recordatorio: Medicamento 8 PM", time: "1 hora" },
-        { id: 'd3', type: "payment", message: "Próximo pago vence en 3 días", time: "2 horas" },
+        // Default notifications - in real app this would come from API
+        { id: `n1_${child.id}`, type: "location", message: "Ubicación actualizada", time: "2 min" },
+        { id: `n2_${child.id}`, type: "payment", message: "Estado del viaje actualizado", time: "1 hora" },
       ],
-    },
-    {
-      id: 'h2',
-      name: 'Lucía García',
-      trip: {
-        destination: "Huaraz - Laguna 69",
-        dates: "16-19 Marzo 2025",
-        group: "Exploradores Norte",
-        responsible: "María Torres",
-      },
-      location: {
-        latitude: -9.0215,
-        longitude: -77.6283,
-        address: "Laguna 69, Huascarán National Park, Huaraz"
-      },
-      notifications: [
-        { id: 'l1', type: "location", message: "Inició caminata al mirador", time: "10 min" },
-        { id: 'l2', type: "payment", message: "Pago de excursión confirmado", time: "30 min" },
-      ],
-    },
-  ];
+      rawData: child // Keep original data for profile access
+    };
+  });
 
-  // Hijo seleccionado
-  const [selectedChildId, setSelectedChildId] = useState(children[0].id);
+  // Hijo seleccionado - handle case when no children
+  const [selectedChildId, setSelectedChildId] = useState(children.length > 0 ? children[0].id : '');
   const selectedChild = useMemo(
-    () => children.find(c => c.id === selectedChildId) ?? children[0],
-    [selectedChildId]
+    () => children.find(c => c.id === selectedChildId) ?? (children.length > 0 ? children[0] : null),
+    [selectedChildId, children]
   );
 
   // Función para navegar al mapa
   const handleViewLocation = () => {
-    if (navigation) {
+    if (navigation && selectedChild) {
       navigation.navigate('MapScreen', {
         latitude: selectedChild.location.latitude,
         longitude: selectedChild.location.longitude,
@@ -172,9 +222,15 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     }
   };
 
-  // Función para navegar al perfil
+  // Función para navegar al perfil del hijo seleccionado
   const handleNavigateToProfile = () => {
-    navigation.navigate('Profile');
+    if (navigation && selectedChild) {
+      navigation.navigate('Profile', {
+        childData: selectedChild.rawData // Pass the raw child data
+      });
+    } else {
+      navigation.navigate('Profile'); // Navigate to parent profile if no child selected
+    }
   };
 
   // Acciones rápidas (se mantienen, pero puedes usarlas con el contexto del hijo seleccionado)
@@ -201,14 +257,16 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
           </View>
 
           {/* Select de hijo */}
-          <View style={{ marginTop: 10 }}>
-            <Dropdown
-              label="Hijo/a"
-              options={children.map(c => ({ label: c.name, value: c.id }))}
-              value={selectedChildId}
-              onChange={setSelectedChildId}
-            />
-          </View>
+          {children.length > 0 && (
+            <View style={{ marginTop: 10 }}>
+              <Dropdown
+                label="Hijo/a"
+                options={children.map(c => ({ label: c.name, value: c.id }))}
+                value={selectedChildId}
+                onChange={setSelectedChildId}
+              />
+            </View>
+          )}
         </View>
         
         {/* Botón de logout */}
@@ -219,19 +277,27 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
       </View>
 
       {/* Viaje Actual (usa datos del hijo seleccionado) */}
-      <View style={styles.tripCard}>
-        <Text style={styles.tripTitle}>
-          Viaje Actual de <Text style={styles.tripChild}>{selectedChild.name.split(' ')[0]}</Text>
-        </Text>
-        <View style={styles.tripInfo}>
-          <Text style={styles.tripDestination}>{selectedChild.trip.destination}</Text>
-          <Text style={styles.tripDates}>{selectedChild.trip.dates}</Text>
-          <View style={styles.tripDetails}>
-            <Text style={styles.tripDetail}>Grupo: {selectedChild.trip.group}</Text>
-            <Text style={styles.tripDetail}>Responsable: {selectedChild.trip.responsible}</Text>
+      {selectedChild ? (
+        <View style={styles.tripCard}>
+          <Text style={styles.tripTitle}>
+            Viaje Actual de <Text style={styles.tripChild}>{selectedChild.name.split(' ')[0]}</Text>
+          </Text>
+          <View style={styles.tripInfo}>
+            <Text style={styles.tripDestination}>{selectedChild.trip.destination}</Text>
+            <Text style={styles.tripDates}>{selectedChild.trip.dates}</Text>
+            <View style={styles.tripDetails}>
+              <Text style={styles.tripDetail}>Grupo: {selectedChild.trip.group}</Text>
+              <Text style={styles.tripDetail}>Responsable: {selectedChild.trip.responsible}</Text>
+            </View>
           </View>
         </View>
-      </View>
+      ) : (
+        <View style={styles.tripCard}>
+          <Text style={styles.tripTitle}>Sin hijos registrados</Text>
+          <Text style={styles.tripDestination}>No tienes hijos registrados en el sistema.</Text>
+          <Text style={styles.tripDates}>Contacta con el administrador para más información.</Text>
+        </View>
+      )}
 
 
       {/* Acceso Rápido (se mantiene igual) */}
@@ -252,19 +318,20 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
       </View>
 
       {/* Notificaciones (ligadas al hijo seleccionado) */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
-        {selectedChild.notifications.map(notification => (
-          <TouchableOpacity key={notification.id} style={styles.notificationItem}>
-            <View style={styles.notificationContent}>
-              <Text style={styles.notificationMessage}>{notification.message}</Text>
-              <Text style={styles.notificationTime}>hace {notification.time}</Text>
-            </View>
-            <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.type) }]} />
-          </TouchableOpacity>
-        ))}
-      
-      </View>
+      {selectedChild && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
+          {selectedChild.notifications.map(notification => (
+            <TouchableOpacity key={notification.id} style={styles.notificationItem}>
+              <View style={styles.notificationContent}>
+                <Text style={styles.notificationMessage}>{notification.message}</Text>
+                <Text style={styles.notificationTime}>hace {notification.time}</Text>
+              </View>
+              <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.type) }]} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </ScrollView>
     </>
   );

@@ -161,36 +161,56 @@ const ContactRow: React.FC<ContactRowProps> = ({ index, phone, onCall, onWhats }
   </View>
 );
 
-const PersonalDataScreen: React.FC = () => {
+interface PersonalDataScreenProps {
+  route?: {
+    params?: {
+      childData?: any; // Child data passed from dashboard
+    };
+  };
+}
+
+const PersonalDataScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
   const { user, isAuthenticated } = useAuth();
+  const childData = route?.params?.childData;
+  
+  // Determine if showing child profile or parent profile
+  const isChildProfile = !!childData;
+  const displayName = childData ? childData.nombres : (user?.name || "Usuario");
+  const displayDni = childData ? childData.doc_numero : (user?.dni || "No disponible");
+  const displayBirthDate = childData ? childData.fecha_nacimiento : "1980-01-01";
   
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: user?.name || "Usuario",
-    document_number: user?.dni || "No disponible",
-    birth_date: "1980-01-01", // Fecha por defecto para adultos
-    age: 44, // Edad por defecto para adultos
+    fullName: displayName,
+    document_number: displayDni,
+    birth_date: displayBirthDate,
+    age: 44, // Will be calculated from birth_date
   });
 
-  const [emergencyContacts] = useState<string[]>([
-    user?.phone || "No disponible", 
-    "+51 999 987 654" // Contacto de emergencia adicional
-  ]);
+  const [emergencyContacts] = useState<string[]>(
+    childData 
+      ? (childData.nums_emergencia || [user?.phone || "No disponible"])
+      : [user?.phone || "No disponible", "+51 999 987 654"]
+  );
 
   const [aboutMe] = useState<AboutMe>({
-    additional_info:
-      "Le gusta participar en actividades grupales y ayudar a sus compañeros.",
+    additional_info: childData 
+      ? (childData.informacion_adicional || "Información no disponible")
+      : "Le gusta participar en actividades grupales y ayudar a sus compañeros.",
   });
 
-  // Actualizar información personal cuando cambie el usuario
+  // Actualizar información personal cuando cambie el usuario o childData
   useEffect(() => {
-    if (user) {
-      setPersonalInfo(prev => ({
-        ...prev,
-        fullName: user.name || "Usuario",
-        document_number: user.dni || "No disponible"
-      }));
-    }
-  }, [user]);
+    const name = childData ? childData.nombres : (user?.name || "Usuario");
+    const dni = childData ? childData.doc_numero : (user?.dni || "No disponible");
+    const birthDate = childData ? childData.fecha_nacimiento : "1980-01-01";
+    
+    setPersonalInfo(prev => ({
+      ...prev,
+      fullName: name,
+      document_number: dni,
+      birth_date: birthDate
+    }));
+  }, [user, childData]);
 
   // Calcular edad cuando cambie birth_date
   const calcAge = (iso: string): number | null => {
@@ -234,8 +254,12 @@ const PersonalDataScreen: React.FC = () => {
             </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Datos Personales</Text>
-            <Text style={styles.subtitle}>Gestiona tu información personal</Text>
+            <Text style={styles.title}>
+              {isChildProfile ? `Perfil de ${personalInfo.fullName.split(' ')[0]}` : 'Datos Personales'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {isChildProfile ? 'Información del menor' : 'Gestiona tu información personal'}
+            </Text>
           </View>
         </View>
 
@@ -267,10 +291,12 @@ const PersonalDataScreen: React.FC = () => {
           title={(
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <FontAwesome name="user" size={18} color="#d62e29" />
-              <Text style={styles.sectionTitle}>Información Personal</Text>
+              <Text style={styles.sectionTitle}>
+                {isChildProfile ? 'Información del Menor' : 'Información Personal'}
+              </Text>
             </View>
           )}
-          subtitle="Datos de identificación"
+          subtitle={isChildProfile ? "Datos del hijo/a" : "Datos de identificación"}
           right={
             <View style={styles.badgeRight}>
               <Text style={styles.badgeRightText}>{isMinor ? "Menor de edad" : "Mayor de edad"}</Text>
@@ -299,36 +325,58 @@ const PersonalDataScreen: React.FC = () => {
             />
           )}
 
-          <ReadonlyField
-            label="Tipo de Usuario"
-            value={user?.is_admin ? "Administrador" : "Usuario"}
-            icon={<Feather name="shield" size={18} color={MUTED} />}
-          />
+          {!isChildProfile && (
+            <>
+              <ReadonlyField
+                label="Tipo de Usuario"
+                value={user?.is_admin ? "Administrador" : "Usuario"}
+                icon={<Feather name="shield" size={18} color={MUTED} />}
+              />
 
-          {user?.created_at && (
+              {user?.created_at && (
+                <ReadonlyField
+                  label="Fecha de Registro"
+                  value={new Date(user.created_at).toLocaleDateString('es-ES')}
+                  icon={<Feather name="calendar" size={18} color={MUTED} />}
+                />
+              )}
+            </>
+          )}
+
+          {isChildProfile && childData && (
             <ReadonlyField
-              label="Fecha de Registro"
-              value={new Date(user.created_at).toLocaleDateString('es-ES')}
-              icon={<Feather name="calendar" size={18} color={MUTED} />}
+              label="Tipo de Documento"
+              value={childData.doc_tipo || "DNI"}
+              icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
             />
           )}
 
-          <View style={styles.row}>
-            <View style={[styles.col, { marginRight: 8 }]}>
-              <ReadonlyField
-                label="Tipo de Documento"
-                value="DNI"
-                icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
-              />
+          {!isChildProfile && (
+            <View style={styles.row}>
+              <View style={[styles.col, { marginRight: 8 }]}>
+                <ReadonlyField
+                  label="Tipo de Documento"
+                  value="DNI"
+                  icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
+                />
+              </View>
+              <View style={[styles.col, { marginLeft: 8 }]}>
+                <ReadonlyField
+                  label="Número de Documento"
+                  value={maskDocument(personalInfo.document_number)}
+                  icon={<Feather name="hash" size={18} color={MUTED} />}
+                />
+              </View>
             </View>
-            <View style={[styles.col, { marginLeft: 8 }]}>
-              <ReadonlyField
-                label="Número de Documento"
-                value={maskDocument(personalInfo.document_number)}
-                icon={<Feather name="hash" size={18} color={MUTED} />}
-              />
-            </View>
-          </View>
+          )}
+
+          {isChildProfile && (
+            <ReadonlyField
+              label="Número de Documento"
+              value={personalInfo.document_number}
+              icon={<Feather name="hash" size={18} color={MUTED} />}
+            />
+          )}
 
           <View style={styles.row}>
             <View style={[styles.col, { marginRight: 8 }]}>
@@ -381,19 +429,58 @@ const PersonalDataScreen: React.FC = () => {
           </TouchableOpacity>
         </Section>
 
-        {/* Acerca de mí */}
+        {/* Acerca de mí / Información adicional */}
         <Section 
           title={(
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <FontAwesome6 name="circle-info" size={18} color="#d62e29" />
-              <Text style={styles.sectionTitle}>Acerca de mí</Text>
+              <Text style={styles.sectionTitle}>
+                {isChildProfile ? 'Información Adicional' : 'Acerca de mí'}
+              </Text>
             </View>
           )} 
-          subtitle="Información adicional y observaciones">
+          subtitle={isChildProfile ? "Detalles y observaciones del menor" : "Información adicional y observaciones"}>
           <View style={styles.noteBox}>
             <Feather name="info" size={18} color={PRIMARY} />
             <Text style={styles.noteText}>{aboutMe.additional_info}</Text>
           </View>
+
+          {/* Mostrar información adicional específica del hijo */}
+          {isChildProfile && childData && (
+            <>
+              {childData.plato_favorito && (
+                <ReadonlyField
+                  label="Plato Favorito"
+                  value={childData.plato_favorito}
+                  icon={<FontAwesome name="cutlery" size={18} color={MUTED} />}
+                />
+              )}
+              
+              {childData.color_favorito && (
+                <ReadonlyField
+                  label="Color Favorito"
+                  value={childData.color_favorito}
+                  icon={<FontAwesome name="paint-brush" size={18} color={MUTED} />}
+                />
+              )}
+              
+              {childData.pasatiempos && (
+                <ReadonlyField
+                  label="Pasatiempos"
+                  value={childData.pasatiempos}
+                  icon={<FontAwesome name="gamepad" size={18} color={MUTED} />}
+                />
+              )}
+              
+              {childData.deportes && (
+                <ReadonlyField
+                  label="Deportes"
+                  value={childData.deportes}
+                  icon={<FontAwesome name="futbol-o" size={18} color={MUTED} />}
+                />
+              )}
+            </>
+          )}
         </Section>
       </ScrollView>
     </View>

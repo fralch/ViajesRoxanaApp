@@ -1,0 +1,86 @@
+{
+    "success": true,
+    "message": "Logged in successfully",
+    "user": {
+        "id": 20,
+        "name": "Andres Balvin",
+        "email": "leancabita@gmail.com",
+        "phone": "964054468",
+        "dni": "98778998",
+        "email_verified_at": null,
+        "is_admin": false,
+        "created_at": "2025-08-30T19:06:32.000000Z",
+        "updated_at": "2025-08-30T19:06:32.000000Z",
+        "hijos": [
+            {
+                "id": 20,
+                "user_id": 20,
+                "nombres": "Leonardo Calderon",
+                "doc_tipo": "DNI",
+                "doc_numero": "71655501",
+                "nums_emergencia": [
+                    "964054468"
+                ],
+                "fecha_nacimiento": "2017-02-28T00:00:00.000000Z",
+                "foto": null,
+                "pasatiempos": null,
+                "deportes": null,
+                "plato_favorito": null,
+                "color_favorito": null,
+                "informacion_adicional": "Es bueno",
+                "created_at": "2025-08-30T19:06:34.000000Z",
+                "updated_at": "2025-09-01T18:01:23.000000Z",
+                "inscripciones": [
+                    {
+                        "id": 20,
+                        "hijo_id": 20,
+                        "paquete_id": 2,
+                        "grupo_id": 2,
+                        "usuario_id": 20,
+                        "created_at": "2025-08-30T19:06:34.000000Z",
+                        "updated_at": "2025-08-30T19:06:34.000000Z",
+                        "grupo": {
+                            "id": 2,
+                            "paquete_id": 2,
+                            "nombre": "Colegio Jupiter",
+                            "fecha_inicio": "2025-08-29",
+                            "fecha_fin": "2025-09-05",
+                            "capacidad": 25,
+                            "tipo_encargado": [
+                                "Profesor"
+                            ],
+                            "nombre_encargado": [
+                                "Jose Galvez"
+                            ],
+                            "celular_encargado": [
+                                "999888777"
+                            ],
+                            "tipo_encargado_agencia": [
+                                "Guia"
+                            ],
+                            "nombre_encargado_agencia": [
+                                "Leonardo Calderon"
+                            ],
+                            "celular_encargado_agencia": [
+                                "964054468"
+                            ],
+                            "activo": true,
+                            "created_at": "2025-08-29T21:57:11.000000Z",
+                            "updated_at": "2025-09-03T21:20:07.000000Z",
+                            "paquete": {
+                                "id": 2,
+                                "nombre": "Paquete Jupiter",
+                                "destino": "Jupiter",
+                                "descripcion": "Prueba viaje a Jupiter",
+                                "activo": true,
+                                "created_at": "2025-08-29T21:56:32.000000Z",
+                                "updated_at": "2025-08-29T21:56:32.000000Z"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "token": "token_bGVhbmNhYml0YUBnbWFpbC5jb206MTc1NzAzODA0OQ=="
+}

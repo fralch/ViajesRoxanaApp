@@ -17,6 +17,7 @@ export interface AuthUserData {
   token: string;
   created_at: string;
   updated_at: string;
+  hijos?: any[]; // Include children data from API
 }
 
 export interface AuthLoginCredentials {
@@ -135,6 +136,7 @@ const useAuthInternal = () => {
         token: apiResponse.token,
         created_at: apiResponse.user.created_at,
         updated_at: apiResponse.user.updated_at,
+        hijos: apiResponse.user.hijos || [], // Include children data
       };
 
       // Guardar datos del usuario
