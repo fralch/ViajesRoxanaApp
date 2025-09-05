@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
+import { AuthService, LoginRequest } from '../services';
 
 // Tipos para el hook de autenticación
 export interface AuthUserData {
   id: string;
   email: string;
   phone: string;
+  dni: string;
   role: 'student' | 'guardian' | 'admin';
   name: string;
   lastname: string;
   is_active: boolean;
+  is_admin: boolean;
   token: string;
   created_at: string;
   updated_at: string;
@@ -104,28 +107,43 @@ const useAuthInternal = () => {
     try {
       setIsLoading(true);
       
-      // Aquí iría la llamada a la API real
-      // Por ahora simulamos una respuesta exitosa
-      const mockUser: AuthUserData = {
-        id: '1',
-        email: credentials.emailPhone.includes('@') ? credentials.emailPhone : 'user@example.com',
-        phone: credentials.emailPhone.includes('@') ? '+51999123456' : credentials.emailPhone,
-        role: 'guardian',
-        name: 'Usuario',
-        lastname: 'Demo',
+      // Validar credenciales antes de enviar
+      const loginRequest: LoginRequest = {
+        email: credentials.emailPhone,
+        password: credentials.password
+      };
+      
+      const validation = AuthService.validateCredentials(loginRequest);
+      if (!validation.isValid) {
+        throw new Error(validation.errors.join(', '));
+      }
+      
+      // Llamada real al API
+      const apiResponse = await AuthService.login(loginRequest);
+      
+      // Mapear la respuesta del API a nuestro formato interno
+      const userData: AuthUserData = {
+        id: apiResponse.user.id.toString(),
+        email: apiResponse.user.email,
+        phone: apiResponse.user.phone,
+        dni: apiResponse.user.dni,
+        role: apiResponse.user.is_admin ? 'admin' : 'guardian',
+        name: apiResponse.user.name,
+        lastname: '', // El API no devuelve lastname separado
         is_active: true,
-        token: 'mock-jwt-token-' + Date.now(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        is_admin: apiResponse.user.is_admin,
+        token: apiResponse.token,
+        created_at: apiResponse.user.created_at,
+        updated_at: apiResponse.user.updated_at,
       };
 
       // Guardar datos del usuario
-      const { token, ...userDataWithoutToken } = mockUser;
+      const { token, ...userDataWithoutToken } = userData;
       await saveToStorage(STORAGE_KEYS.USER_DATA, userDataWithoutToken);
       await saveToStorage(STORAGE_KEYS.AUTH_TOKEN, token);
       await saveToStorage(STORAGE_KEYS.REMEMBER_ME, credentials.remember ?? true);
 
-      setUser(mockUser);
+      setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);

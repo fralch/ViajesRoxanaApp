@@ -23,9 +23,7 @@
       "edgeToEdgeEnabled": true,
       "package": "com.fralch.ViajesRoxana"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+
     "plugins": [],
     "extra": {
       "eas": {

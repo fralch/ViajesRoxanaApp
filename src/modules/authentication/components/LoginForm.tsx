@@ -18,20 +18,20 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
   const navigation = useNavigation();
   const { login, isLoading } = useAuth();
-  const [emailPhone, setEmailPhone] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [remember, setRemember] = useState(true);
 
   const handleLogin = async () => {
-    if (!emailPhone || !password) {
+    if (!email || !password) {
       Alert.alert('Error', 'Por favor completa todos los campos');
       return;
     }
     
     try {
       await login({
-        emailPhone,
+        emailPhone: email,
         password,
         remember,
       });
@@ -48,16 +48,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
 
   return (
     <View style={styles.section}>
-      {/* Email / teléfono */}
-      <Text style={styles.label}>Correo electrónico o celular</Text>
+      {/* Email */}
+      <Text style={styles.label}>Correo electrónico</Text>
       <View style={styles.inputWrap}>
-        <Ionicons name="person-outline" size={20} color="#6B7280" style={styles.leftIcon} />
+        <Ionicons name="mail-outline" size={20} color="#6B7280" style={styles.leftIcon} />
         <TextInput
           style={styles.input}
-          placeholder="carlosrosales@gmail.com"
+          placeholder="admin@viajesroxana.com"
           placeholderTextColor="#9CA3AF"
-          value={emailPhone}
-          onChangeText={setEmailPhone}
+          value={email}
+          onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
           autoComplete="email"

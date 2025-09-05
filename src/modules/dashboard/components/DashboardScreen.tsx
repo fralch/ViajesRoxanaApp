@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar } from 'react-native';
-import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar, Alert } from 'react-native';
+import { FontAwesome, FontAwesome6, Feather } from '@expo/vector-icons';
+import { useAuth } from '../../../shared/hooks';
 
 // --- Dropdown simple sin librerías ---
 const Dropdown = ({
@@ -82,7 +83,32 @@ const dropdownStyles = StyleSheet.create({
 });
 
 const DashboardScreen = ({ navigation }: { navigation?: any }) => {
-  const userName = "Ana García";
+  const { user, logout } = useAuth();
+  
+  const handleLogout = () => {
+    Alert.alert(
+      "Cerrar Sesión",
+      "¿Estás seguro de que deseas cerrar sesión? Se borrarán todos los datos guardados localmente.",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Cerrar Sesión",
+          style: "destructive",
+          onPress: () => logout()
+        }
+      ]
+    );
+  };
+
+  // Usar datos reales del usuario o valores por defecto
+  const userName = user?.name || "Usuario";
+  const userEmail = user?.email || "";
+  const userPhone = user?.phone || "";
+  const userDni = user?.dni || "";
+  const isAdmin = user?.is_admin || false;
 
   // === Datos por hijo ===
   const children = [
@@ -161,11 +187,18 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     <>
       <StatusBar barStyle="light-content" backgroundColor="#d62d28" />
       <ScrollView style={styles.container}>
-      {/* Header (DISEÑO ORIGINAL, solo se agrega el selector debajo del nombre) */}
+      {/* Header con información del usuario padre */}
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>¡Hola, {userName}!</Text>
-          <Text style={styles.subGreeting}>Bienvenido</Text>
+          <Text style={styles.subGreeting}>{isAdmin ? "Administrador" : "Bienvenido"}</Text>
+          
+          {/* Información del usuario padre */}
+          <View style={styles.userInfo}>
+            {userEmail ? <Text style={styles.userDetail}>📧 {userEmail}</Text> : null}
+            {userPhone ? <Text style={styles.userDetail}>📱 {userPhone}</Text> : null}
+            {userDni ? <Text style={styles.userDetail}>🆔 DNI: {userDni}</Text> : null}
+          </View>
 
           {/* Select de hijo */}
           <View style={{ marginTop: 10 }}>
@@ -177,8 +210,11 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
             />
           </View>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <FontAwesome name="user" size={25} color="#d62d28" />
+        
+        {/* Botón de logout */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Feather name="log-out" size={20} color="#d62d28" />
+          <Text style={styles.logoutText}>Salir</Text>
         </TouchableOpacity>
       </View>
 
@@ -253,6 +289,29 @@ const styles = StyleSheet.create({
   subGreeting: { fontSize: 16, color: '#666', marginTop: 4 },
   profileButton: {
     width: 50, height: 50, borderRadius: 25, backgroundColor: '#fde3e3', justifyContent: 'center', alignItems: 'center',
+  },
+  logoutButton: {
+    backgroundColor: '#fde3e3',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  logoutText: {
+    color: '#d62d28',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  userInfo: {
+    marginTop: 8,
+    gap: 4,
+  },
+  userDetail: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
 
   tripCard: {

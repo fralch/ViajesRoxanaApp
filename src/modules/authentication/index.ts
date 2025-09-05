@@ -9,8 +9,10 @@ export interface AuthUser {
   id: string;
   email: string;
   phone: string;
-  role: 'student' | 'guardian';
+  role: 'student' | 'guardian' | 'admin';
   name: string;
+  lastname: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +20,7 @@ export interface AuthUser {
 export interface LoginCredentials {
   emailPhone: string;
   password: string;
+  remember?: boolean;
 }
 
 export interface RegisterData {

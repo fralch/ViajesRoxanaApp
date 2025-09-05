@@ -12,7 +12,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useAuth } from '../../../shared/hooks';
-import { formatDate } from '../../../shared/utils';
 
 // ---- Interfaces ----
 interface PersonalInfo {
@@ -166,14 +165,14 @@ const PersonalDataScreen: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   
   const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
-    fullName: user?.name && user?.lastname ? `${user.name} ${user.lastname}` : "Usuario",
-    document_number: "12345678", // Este campo no está en el contexto, mantener como ejemplo
-    birth_date: "2008-03-15", // Este campo no está en el contexto, mantener como ejemplo
-    age: 16, // Calculado desde birth_date
+    fullName: user?.name || "Usuario",
+    document_number: user?.dni || "No disponible",
+    birth_date: "1980-01-01", // Fecha por defecto para adultos
+    age: 44, // Edad por defecto para adultos
   });
 
   const [emergencyContacts] = useState<string[]>([
-    user?.phone || "+51 999 654 321", 
+    user?.phone || "No disponible", 
     "+51 999 987 654" // Contacto de emergencia adicional
   ]);
 
@@ -187,7 +186,8 @@ const PersonalDataScreen: React.FC = () => {
     if (user) {
       setPersonalInfo(prev => ({
         ...prev,
-        fullName: user.name && user.lastname ? `${user.name} ${user.lastname}` : "Usuario"
+        fullName: user.name || "Usuario",
+        document_number: user.dni || "No disponible"
       }));
     }
   }, [user]);
@@ -237,7 +237,6 @@ const PersonalDataScreen: React.FC = () => {
             <Text style={styles.title}>Datos Personales</Text>
             <Text style={styles.subtitle}>Gestiona tu información personal</Text>
           </View>
-        
         </View>
 
         <View style={styles.headerChips}>
@@ -292,11 +291,25 @@ const PersonalDataScreen: React.FC = () => {
             />
           )}
 
-          {user?.role && (
+          {user?.phone && (
             <ReadonlyField
-              label="Rol"
-              value={user.role}
-              icon={<Feather name="shield" size={18} color={MUTED} />}
+              label="Teléfono"
+              value={user.phone}
+              icon={<Feather name="phone" size={18} color={MUTED} />}
+            />
+          )}
+
+          <ReadonlyField
+            label="Tipo de Usuario"
+            value={user?.is_admin ? "Administrador" : "Usuario"}
+            icon={<Feather name="shield" size={18} color={MUTED} />}
+          />
+
+          {user?.created_at && (
+            <ReadonlyField
+              label="Fecha de Registro"
+              value={new Date(user.created_at).toLocaleDateString('es-ES')}
+              icon={<Feather name="calendar" size={18} color={MUTED} />}
             />
           )}
 
