@@ -402,15 +402,7 @@ const PersonalDataScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
               onWhats={openWhatsApp}
             />
           ))}
-          <TouchableOpacity
-            style={[styles.addBtn, emergencyContacts.length >= 3 && styles.addBtnDisabled]}
-            disabled={emergencyContacts.length >= 3}
-          >
-            <Ionicons name="add" size={18} color={SURFACE} />
-            <Text style={styles.addBtnText}>
-              {emergencyContacts.length >= 3 ? "Límite alcanzado" : "Agregar contacto"}
-            </Text>
-          </TouchableOpacity>
+         
         </Section>
 
         {/* Acerca de mí / Información adicional */}
