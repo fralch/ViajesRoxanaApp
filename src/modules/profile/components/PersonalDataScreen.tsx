@@ -458,6 +458,12 @@ const PersonalDataScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
             </>
           )}
         </Section>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => Linking.openURL('https://grupoviajesroxana.com/login')}
+        >
+          <Text style={styles.editButtonText}>Editar</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -611,6 +617,19 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   noteText: { color: "#7c2d12", flex: 1, lineHeight: 20, fontSize: 14 },
+  editButton: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  editButtonText: {
+    color: SURFACE,
+    fontWeight: "800",
+    fontSize: 16,
+  },
 });
 
 export default PersonalDataScreen;
