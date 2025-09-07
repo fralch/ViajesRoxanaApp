@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, Image, View } from 'react-native';
+import { Text, Image, View, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -104,12 +104,20 @@ function MainTabNavigator() {
       <Tab.Screen 
         name="Profile" 
         component={PersonalDataScreen}
-        options={{
+        options={({ navigation }) => ({
           title: 'Perfil',
           tabBarIcon: ({ color, size }) => (
             <AntDesign name="user" size={size} color={color} />
           ),
-        }}
+          headerLeft: () => (
+            <TouchableOpacity 
+              onPress={() => navigation.navigate('Dashboard')}
+              style={{ marginLeft: 15 }}
+            >
+              <AntDesign name="arrowleft" size={24} color="#fff" />
+            </TouchableOpacity>
+          ),
+        })}
       />
     </Tab.Navigator>
   );
