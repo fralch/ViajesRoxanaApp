@@ -213,10 +213,13 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
   // Función para navegar al mapa
   const handleViewLocation = () => {
     if (navigation && selectedChild) {
+      // Pass docNumber so Map component can fetch real location data from API
       navigation.navigate('MapScreen', {
+        docNumber: selectedChild.rawData.doc_numero,
+        studentName: selectedChild.name,
+        // Optionally pass fallback data
         latitude: selectedChild.location.latitude,
         longitude: selectedChild.location.longitude,
-        studentName: selectedChild.name,
         address: selectedChild.location.address
       });
     }

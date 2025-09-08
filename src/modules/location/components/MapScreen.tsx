@@ -9,18 +9,19 @@ interface MapScreenProps {
       longitude?: number;
       studentName?: string;
       address?: string;
+      docNumber?: string;
     };
   };
   navigation?: any;
 }
 
 const MapScreen: React.FC<MapScreenProps> = ({ route, navigation }) => {
-  // Datos por defecto (Cusco - Machu Picchu como en el DashboardScreen)
+  // Datos por defecto 
   const defaultData = {
-    latitude: -13.1631,
-    longitude: -72.5450,
-    studentName: 'Diego García',
-    address: 'Hotel Imperial Cusco, Av. Imperial 345, Cusco'
+    latitude: 4.6097,
+    longitude: -74.0817,
+    studentName: 'Juan Pérez Prueba',
+    address: 'Centro de Bogotá'
   };
 
   // Usar datos de la ruta o valores por defecto
@@ -28,7 +29,8 @@ const MapScreen: React.FC<MapScreenProps> = ({ route, navigation }) => {
     latitude = defaultData.latitude,
     longitude = defaultData.longitude,
     studentName = defaultData.studentName,
-    address = defaultData.address
+    address = defaultData.address,
+    docNumber
   } = route?.params || {};
 
   const handleClose = () => {
@@ -44,6 +46,7 @@ const MapScreen: React.FC<MapScreenProps> = ({ route, navigation }) => {
         longitude={longitude}
         studentName={studentName}
         address={address}
+        docNumber={docNumber}
         onClose={handleClose}
       />
     </View>

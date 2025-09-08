@@ -1,79 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
+import { LocationService } from '../../../shared/services';
+import { useAuth } from '../../../shared/hooks';
 
 const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
+  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [locationData, setLocationData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const locationData = {
-    currentLocation: {
-      latitude: -13.1631,
-      longitude: -72.5450,
-      address: "Hotel Imperial Cusco, Av. Imperial 345, Cusco",
-      accuracy: 5,
-      altitude: 3399
-    },
-    student: {
-      name: "María José Rodríguez",
-      tripCode: "VR-2025-001",
-      group: "Grupo Aventura"
-    },
-    currentActivity: {
-      name: "Descanso en el hotel",
-      startTime: "20:00",
-      endTime: "07:00",
-      location: "Hotel Imperial Cusco",
-      description: "Los estudiantes están descansando después de la cena. Próxima actividad mañana a las 7:00 AM."
-    },
-    liveStatus: {
-      status: "safe", // safe, warning, emergency
-      lastMovement: "5 min ago",
-      batteryLevel: 78,
-      signalStrength: 4
-    },
-    recentActivities: [
-      {
-        id: 1,
-        time: "19:30",
-        activity: "Llegada al hotel",
-        location: "Hotel Imperial Cusco",
-        status: "completed",
-        notes: "Todos los estudiantes llegaron seguros"
-      },
-      {
-        id: 2,
-        time: "18:45",
-        activity: "Traslado desde restaurante",
-        location: "Restaurante Inka → Hotel Imperial",
-        status: "completed",
-        notes: "Viaje en bus sin incidentes"
-      },
-      {
-        id: 3,
-        time: "17:00",
-        activity: "Cena grupal",
-        location: "Restaurante Inka",
-        status: "completed",
-        notes: "Cena típica cusqueña"
+  // Get document number from the first child of logged user
+  const firstChild = user?.hijos?.[0];
+  const docNumber = firstChild?.doc_numero;
+
+  const fetchLocationData = async () => {
+    try {
+      setError(null);
+      
+      if (!docNumber) {
+        throw new Error('No se encontró información del estudiante para obtener ubicación');
       }
-    ],
-    emergencyContacts: [
-      {
-        id: 1,
-        name: "Carlos Mendoza",
-        role: "Responsable del viaje",
-        phone: "+51 999 123 456",
-        available: true
-      },
-      {
-        id: 2,
-        name: "Clínica San Pablo Cusco",
-        role: "Centro médico",
-        phone: "+51 84 240 000",
-        available: true
-      }
-    ]
+      
+      const apiResponse = await LocationService.getLastLocation(docNumber);
+      const transformedData = LocationService.transformLocationData(apiResponse);
+      setLocationData(transformedData);
+      setLastUpdate(transformedData.lastUpdate);
+    } catch (err) {
+      console.error('Error fetching location data:', err);
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (user && docNumber) {
+      fetchLocationData();
+    }
+  }, [user, docNumber]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -104,9 +70,7 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setLastUpdate(new Date());
+    await fetchLocationData();
     setIsRefreshing(false);
   };
 
@@ -131,6 +95,39 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
       minute: '2-digit' 
     });
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.loadingText}>Cargando ubicación...</Text>
+      </View>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>Error: {error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchLocationData}>
+          <Text style={styles.retryButtonText}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // Show empty state if no data
+  if (!locationData) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>No se encontraron datos de ubicación</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchLocationData}>
+          <Text style={styles.retryButtonText}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView 
@@ -247,7 +244,7 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
           </TouchableOpacity>
         </View>
 
-        {locationData.recentActivities.map((activity) => (
+        {locationData.recentActivities.map((activity: any) => (
           <View key={activity.id} style={styles.historyItem}>
             <View style={styles.historyTime}>
               <Text style={styles.historyTimeText}>{activity.time}</Text>
@@ -270,7 +267,7 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
       <View style={styles.emergencyCard}>
         <Text style={styles.cardTitle}>🚨 Contactos de Emergencia</Text>
         
-        {locationData.emergencyContacts.map((contact) => (
+        {locationData.emergencyContacts.map((contact: any) => (
           <View key={contact.id} style={styles.emergencyContact}>
             <View style={styles.emergencyContactInfo}>
               <Text style={styles.emergencyContactName}>{contact.name}</Text>
@@ -325,6 +322,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#f44336',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#d62d28',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   header: {
     backgroundColor: '#fff',

@@ -20,6 +20,7 @@ import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome, FontAwesome5, AntDesign, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LocationService } from '../../../shared/services';
 
 
 // --- Design System refinado ---
@@ -67,20 +68,22 @@ const BORDER_RADIUS = {
 };
 
 interface MapProps {
-  latitude: number;
-  longitude: number;
-  studentName: string;
+  latitude?: number;
+  longitude?: number;
+  studentName?: string;
   address?: string;
+  docNumber?: string;
   onClose?: () => void;
 }
 
 const { width, height } = Dimensions.get('window');
 
 export const Map: React.FC<MapProps> = ({
-  latitude,
-  longitude,
-  studentName,
-  address,
+  latitude: propLatitude,
+  longitude: propLongitude,
+  studentName: propStudentName,
+  address: propAddress,
+  docNumber,
 }) => {
   const insets = useSafeAreaInsets();
   const [mapHtml, setMapHtml] = useState<string>('');
@@ -90,6 +93,35 @@ export const Map: React.FC<MapProps> = ({
   const [modalScale] = useState(new Animated.Value(0));
   const [shareModalScale] = useState(new Animated.Value(0));
   const [labelOpacity] = useState(new Animated.Value(0));
+  
+  // State for API data
+  const [apiData, setApiData] = useState<any>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  
+  // Use API data when available, otherwise use props, then fallback to defaults
+  const latitude = apiData?.currentLocation?.latitude || propLatitude || 4.6097;
+  const longitude = apiData?.currentLocation?.longitude || propLongitude || -74.0817;
+  const studentName = apiData?.student?.name || propStudentName || 'Estudiante';
+  const address = apiData?.currentLocation?.address || propAddress || 'Ubicación no disponible';
+
+  // Fetch API data when docNumber is provided
+  useEffect(() => {
+    const fetchLocationData = async () => {
+      if (docNumber) {
+        try {
+          setApiError(null);
+          const apiResponse = await LocationService.getLastLocation(docNumber);
+          const transformedData = LocationService.transformLocationData(apiResponse);
+          setApiData(transformedData);
+        } catch (err) {
+          console.error('Error fetching location data for map:', err);
+          setApiError(err instanceof Error ? err.message : 'Error desconocido');
+        }
+      }
+    };
+
+    fetchLocationData();
+  }, [docNumber]);
 
   useEffect(() => {
     // HTML de Leaflet sin mostrar lat/long en el popup
@@ -384,6 +416,38 @@ export const Map: React.FC<MapProps> = ({
     </Modal>
   );
 
+  // Show error state if API failed when docNumber is provided
+  if (apiError && docNumber) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
+        <View style={styles.errorContainer}>
+          <Ionicons name="warning-outline" size={48} color={COLORS.primary} />
+          <Text style={styles.errorTitle}>Error al cargar ubicación</Text>
+          <Text style={styles.errorMessage}>{apiError}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton} 
+            onPress={() => {
+              const fetchLocationData = async () => {
+                try {
+                  setApiError(null);
+                  const apiResponse = await LocationService.getLastLocation(docNumber);
+                  const transformedData = LocationService.transformLocationData(apiResponse);
+                  setApiData(transformedData);
+                } catch (err) {
+                  setApiError(err instanceof Error ? err.message : 'Error desconocido');
+                }
+              };
+              fetchLocationData();
+            }}
+          >
+            <Text style={styles.retryButtonText}>Reintentar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primaryDark} translucent />
@@ -577,6 +641,14 @@ const styles = StyleSheet.create({
 
   cancelButton: { padding: SPACING.large, backgroundColor: COLORS.borderLight, borderRadius: BORDER_RADIUS.medium, alignItems: 'center' },
   cancelButtonText: { fontSize: FONT_SIZES.large, fontWeight: '700', color: COLORS.textSecondary },
+
+  // Error states
+  centerContent: { justifyContent: 'center', alignItems: 'center', padding: SPACING.xlarge },
+  errorContainer: { alignItems: 'center', maxWidth: 280 },
+  errorTitle: { fontSize: FONT_SIZES.xlarge, fontWeight: '700', color: COLORS.textPrimary, marginTop: SPACING.medium, marginBottom: SPACING.small, textAlign: 'center' },
+  errorMessage: { fontSize: FONT_SIZES.medium, color: COLORS.textSecondary, textAlign: 'center', marginBottom: SPACING.xlarge, lineHeight: 20 },
+  retryButton: { backgroundColor: COLORS.primary, paddingHorizontal: SPACING.xlarge, paddingVertical: SPACING.medium, borderRadius: BORDER_RADIUS.medium },
+  retryButtonText: { fontSize: FONT_SIZES.medium, fontWeight: '600', color: COLORS.white },
 });
 
 export default Map;
