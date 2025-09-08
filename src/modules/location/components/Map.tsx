@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -67,6 +67,36 @@ const BORDER_RADIUS = {
   xlarge: 20,
 };
 
+// Función helper para detectar URLs en texto
+const detectURL = (text: string | null | undefined): string | null => {
+  if (!text) return null;
+  
+  const urlRegex = /(https?:\/\/[^\s<>"'()]+)/gi;
+  let match = text.match(urlRegex);
+  
+  if (match) {
+    return match[0];
+  }
+
+  const domainRegex = /([a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s<>"'()]*)/gi;
+  match = text.match(domainRegex);
+  if (match && !match[0].startsWith('http')) {
+    if (match[0].includes('/') || match[0].split('.').length > 2) {
+       return 'https://' + match[0];
+    }
+  }
+  
+  return null;
+};
+
+// Función helper para extraer texto sin URL
+const getTextWithoutURL = (text: string | null | undefined): string => {
+  if (!text) return '';
+  const url = detectURL(text);
+  if (!url) return text;
+  return text.replace(url.replace('https://', ''), '').trim();
+};
+
 interface MapProps {
   latitude?: number;
   longitude?: number;
@@ -93,6 +123,7 @@ export const Map: React.FC<MapProps> = ({
   const [modalScale] = useState(new Animated.Value(0));
   const [shareModalScale] = useState(new Animated.Value(0));
   const [labelOpacity] = useState(new Animated.Value(0));
+  const [activeTab, setActiveTab] = useState('map');
   
   // State for API data
   const [apiData, setApiData] = useState<any>(null);
@@ -103,6 +134,10 @@ export const Map: React.FC<MapProps> = ({
   const longitude = apiData?.currentLocation?.longitude || propLongitude || -74.0817;
   const studentName = apiData?.student?.name || propStudentName || 'Estudiante';
   const address = apiData?.currentLocation?.address || propAddress || 'Ubicación no disponible';
+
+  const liveUrl = useMemo(() => detectURL(apiData?.currentLocation?.description || address), [apiData, address]);
+  const cleanAddress = useMemo(() => getTextWithoutURL(apiData?.currentLocation?.description || address), [apiData, address]);
+  const showTabs = !!liveUrl;
 
   // Fetch API data when docNumber is provided
   useEffect(() => {
@@ -178,9 +213,9 @@ export const Map: React.FC<MapProps> = ({
           var marker = L.marker([${latitude}, ${longitude}], {icon: customIcon}).addTo(map);
 
           var popupContent =
-            '<div class="custom-popup">'+
-              '<div class="popup-title">${studentName}</div>'+
-              ${address ? `'<div class="popup-address">${address.replace(/'/g, "\\'")}</div>' +` : "'' +"}
+            '<div class="custom-popup"'+ 
+              '<div class="popup-title">${studentName}</div>'+ 
+              ${cleanAddress ? `'<div class="popup-address">${cleanAddress.replace(/'/g, "\'" )}</div>' +` : "'' +"}
             '</div>';
 
           marker.bindPopup(popupContent, { maxWidth: 260 });
@@ -194,7 +229,7 @@ export const Map: React.FC<MapProps> = ({
       </html>
     `;
     setMapHtml(html);
-  }, [latitude, longitude, studentName, address]);
+  }, [latitude, longitude, studentName, cleanAddress]);
 
 
 
@@ -263,7 +298,7 @@ export const Map: React.FC<MapProps> = ({
   const shareViaApp = async (method: 'native' | 'copy' | 'whatsapp') => {
     const title = `Ubicación de ${studentName}`;
     // Si hay dirección, la usamos; de lo contrario, un texto genérico sin números
-    const prettyAddress = address ? `📮 ${address}` : 'Toca el enlace para abrir la ubicación en el mapa.';
+    const prettyAddress = cleanAddress ? `📮 ${cleanAddress}` : 'Toca el enlace para abrir la ubicación en el mapa.';
     const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
     const message = `📍 ${title}\n${prettyAddress}\n🔗 ${mapsUrl}`;
@@ -377,8 +412,8 @@ export const Map: React.FC<MapProps> = ({
               <Ionicons name="location" size={16} color={COLORS.primary} />
               <Text style={styles.locationPreviewTitle}>{studentName}</Text>
             </View>
-            {address ? (
-              <Text style={styles.locationPreviewAddress}>{address}</Text>
+            {cleanAddress ? (
+              <Text style={styles.locationPreviewAddress}>{cleanAddress}</Text>
             ) : (
               <Text style={styles.locationPreviewAddress}>
                 La ubicación se abrirá en el mapa.
@@ -415,6 +450,33 @@ export const Map: React.FC<MapProps> = ({
       </View>
     </Modal>
   );
+
+  const renderTabs = () => {
+    if (!showTabs) return null;
+    return (
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'map' && styles.activeTabButton]}
+          onPress={() => setActiveTab('map')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="map-outline" size={16} color={activeTab === 'map' ? COLORS.primary : COLORS.textSecondary} />
+          <Text style={[styles.tabButtonText, activeTab === 'map' && styles.activeTabButtonText]}>Mapa</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'live' && styles.activeTabButton]}
+          onPress={() => setActiveTab('live')}
+          activeOpacity={0.8}
+        >
+          <View style={styles.liveIconContainer}>
+            <View style={styles.liveIconDot} />
+            <Ionicons name="radio-outline" size={16} color={activeTab === 'live' ? COLORS.primary : COLORS.textSecondary} />
+          </View>
+          <Text style={[styles.tabButtonText, activeTab === 'live' && styles.activeTabButtonText]}>Tiempo Real</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   // Show error state if API failed when docNumber is provided
   if (apiError && docNumber) {
@@ -454,81 +516,105 @@ export const Map: React.FC<MapProps> = ({
       {renderDirectionsModal()}
       {renderShareModal()}
 
-      {/* Mapa */}
-      <View style={styles.mapContainer}>
-        {mapHtml ? (
-          <WebView
-            source={{ html: mapHtml }}
-            style={styles.webView}
-            javaScriptEnabled
-            domStorageEnabled
-            startInLoadingState={false}
-            scalesPageToFit={Platform.OS === 'android'}
-            onLoadEnd={handleMapLoad}
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-          />
-        ) : null}
+      {renderTabs()}
 
-        {/* Loading overlay */}
-        {isLoading && (
-          <View style={styles.loadingOverlay}>
-            <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.loadingGradient}>
-              <ActivityIndicator size="large" color="white" />
-              <Text style={styles.loadingText}>Cargando mapa...</Text>
-              <Text style={styles.loadingSubtext}>Preparando ubicación</Text>
-            </LinearGradient>
-          </View>
+      {/* MAPA */}
+      <View style={styles.mapContainer}>
+        {activeTab === 'map' && (
+          <>
+            {mapHtml ? (
+              <WebView
+                source={{ html: mapHtml }}
+                style={styles.webView}
+                javaScriptEnabled
+                domStorageEnabled
+                startInLoadingState={false}
+                scalesPageToFit={Platform.OS === 'android'}
+                onLoadEnd={handleMapLoad}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+              />
+            ) : null}
+
+            {isLoading && (
+              <View style={styles.loadingOverlay}>
+                <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.loadingGradient}>
+                  <ActivityIndicator size="large" color="white" />
+                  <Text style={styles.loadingText}>Cargando mapa...</Text>
+                  <Text style={styles.loadingSubtext}>Preparando ubicación</Text>
+                </LinearGradient>
+              </View>
+            )}
+          </>
+        )}
+
+        {activeTab === 'live' && liveUrl && (
+          <WebView
+            source={{ uri: liveUrl }}
+            style={styles.webView}
+            startInLoadingState={true}
+            renderLoading={() => (
+              <View style={styles.loadingOverlay}>
+                <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.loadingGradient}>
+                  <ActivityIndicator size="large" color="white" />
+                  <Text style={styles.loadingText}>Cargando mapa en vivo...</Text>
+                  <Text style={styles.loadingSubtext}>Conectando con el servidor</Text>
+                </LinearGradient>
+              </View>
+            )}
+          />
         )}
       </View>
 
       {/* Label superpuesto en el mapa */}
-      <Animated.View style={[styles.mapLabel, { opacity: labelOpacity }]}>
-        <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.labelGradient}>
-          <View style={styles.labelContent}>
-            <View style={styles.studentInfo}>
-              <View style={styles.studentNameContainer}>
-                <View style={styles.avatarContainer}>
-                  <Ionicons name="person" size={18} color={COLORS.primary} />
+      {activeTab === 'map' && (
+        <Animated.View style={[styles.mapLabel, { opacity: labelOpacity }]}>
+          <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.labelGradient}>
+            <View style={styles.labelContent}>
+              <View style={styles.studentInfo}>
+                <View style={styles.studentNameContainer}>
+                  <View style={styles.avatarContainer}>
+                    <Ionicons name="person" size={18} color={COLORS.primary} />
+                  </View>
+                  <Text style={styles.studentName}>{studentName}</Text>
                 </View>
-                <Text style={styles.studentName}>{studentName}</Text>
+
+                {cleanAddress && (
+                  <View style={styles.addressContainer}>
+                    <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
+                    <Text style={styles.addressText}>{cleanAddress}</Text>
+                  </View>
+                )}
               </View>
+              
+              {/* Botones de acción */}
+              <View style={styles.labelActions}>
+                <TouchableOpacity
+                  style={styles.labelActionButton}
+                  onPress={handleGetDirections}
+                  activeOpacity={0.85}
+                >
+                  <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.labelButtonGradient}>
+                    <Ionicons name="navigate" size={18} color="white" />
+                    <Text style={styles.labelButtonText}>Direcciones</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
-              {address && (
-                <View style={styles.addressContainer}>
-                  <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-                  <Text style={styles.addressText}>{address}</Text>
-                </View>
-              )}
+                <TouchableOpacity
+                  style={styles.labelActionButton}
+                  onPress={handleShareLocation}
+                  activeOpacity={0.85}
+                >
+                  <View style={styles.labelSecondaryButton}>
+                    <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+                    <Text style={styles.labelSecondaryButtonText}>Compartir</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
-            
-            {/* Botones de acción */}
-            <View style={styles.labelActions}>
-              <TouchableOpacity
-                style={styles.labelActionButton}
-                onPress={handleGetDirections}
-                activeOpacity={0.85}
-              >
-                <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.labelButtonGradient}>
-                  <Ionicons name="navigate" size={18} color="white" />
-                  <Text style={styles.labelButtonText}>Direcciones</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.labelActionButton}
-                onPress={handleShareLocation}
-                activeOpacity={0.85}
-              >
-                <View style={styles.labelSecondaryButton}>
-                  <Ionicons name="share-outline" size={18} color={COLORS.primary} />
-                  <Text style={styles.labelSecondaryButtonText}>Compartir</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </LinearGradient>
-      </Animated.View>
+          </LinearGradient>
+        </Animated.View>
+      )}
     </View>
   );
 };
@@ -649,6 +735,53 @@ const styles = StyleSheet.create({
   errorMessage: { fontSize: FONT_SIZES.medium, color: COLORS.textSecondary, textAlign: 'center', marginBottom: SPACING.xlarge, lineHeight: 20 },
   retryButton: { backgroundColor: COLORS.primary, paddingHorizontal: SPACING.xlarge, paddingVertical: SPACING.medium, borderRadius: BORDER_RADIUS.medium },
   retryButtonText: { fontSize: FONT_SIZES.medium, fontWeight: '600', color: COLORS.white },
+
+  // Tabs
+  tabContainer: {
+    flexDirection: 'row',
+    padding: SPACING.xs,
+    marginHorizontal: SPACING.medium,
+    marginTop: SPACING.small,
+    backgroundColor: COLORS.borderLight,
+    borderRadius: BORDER_RADIUS.medium,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.small,
+    borderRadius: BORDER_RADIUS.small,
+    gap: SPACING.small,
+  },
+  activeTabButton: {
+    backgroundColor: COLORS.white,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  tabButtonText: {
+    fontSize: FONT_SIZES.medium,
+    fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  activeTabButtonText: {
+    color: COLORS.primary,
+  },
+  liveIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.small,
+  },
+  liveIconDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.success,
+    marginRight: 2,
+  },
 });
 
 export default Map;
