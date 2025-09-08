@@ -78,8 +78,8 @@ export interface FormState<T> {
   isValid: boolean;
 }
 
-// Notification types
-export interface PushNotification {
+// Local Notification types (e.g., for in-app display)
+export interface LocalNotification {
   id: string;
   user_id: string;
   type: 'location' | 'medical' | 'activity' | 'payment' | 'emergency';
@@ -88,6 +88,18 @@ export interface PushNotification {
   data?: Record<string, any>;
   read: boolean;
   timestamp: string;
+}
+
+// API Notification type
+export interface Notification {
+  id: number;
+  hijo_id: number;
+  user_id: number;
+  mensaje: string;
+  celular: string;
+  estado: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // File upload types

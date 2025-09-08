@@ -195,11 +195,6 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
         longitude: -77.0428,
         address: "Lima, Peru" // Default location
       },
-      notifications: [
-        // Default notifications - in real app this would come from API
-        { id: `n1_${child.id}`, type: "location", message: "Ubicación actualizada", time: "2 min" },
-        { id: `n2_${child.id}`, type: "payment", message: "Estado del viaje actualizado", time: "1 hora" },
-      ],
       rawData: child // Keep original data for profile access
     };
   });
@@ -315,9 +310,9 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
         </View>
       </View>
 
-      {/* Notificaciones (ligadas al hijo seleccionado) */}
+      {/* Notificaciones (ligadas al usuario/padre) */}
       {selectedChild && (
-        <NotificationsScreen notifications={selectedChild.notifications} />
+        <NotificationsScreen dni={userDni} />
       )}
     </ScrollView>
     </>
