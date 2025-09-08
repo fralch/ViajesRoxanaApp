@@ -11,6 +11,7 @@ export { default as ProgressBar } from './ProgressBar';
 export { default as Card } from './Card';
 export { default as Avatar } from './Avatar';
 export { default as TabBar } from './TabBar';
+export { default as ExpandableText } from './ExpandableText';
 // UserProfile moved to hooks as useUserProfile
 // AuthExample removed - functionality integrated into useAuth hook
 

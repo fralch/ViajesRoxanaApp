@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useNotifications, useAuth } from '../../../shared/hooks';
 import { timeAgo } from '../../../shared/utils';
+import { ExpandableText } from '../../../shared/components';
 
 const getNotificationColor = (type: string) => {
   // Simplified logic, as the API response doesn't have a type
@@ -15,11 +15,7 @@ const getNotificationColor = (type: string) => {
 const NotificationsScreen = () => {
   const { user } = useAuth();
   const { notifications, isLoading, error } = useNotifications(user?.dni || null);
-  const navigation = useNavigation();
-
-  const handlePress = () => {
-    navigation.navigate('NotificationDetails');
-  };
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (isLoading) {
     return (
@@ -46,22 +42,28 @@ const NotificationsScreen = () => {
     );
   }
 
+  const notificationsToShow = isExpanded ? notifications : notifications.slice(0, 3);
+
   return (
-    <TouchableOpacity onPress={handlePress} style={styles.section}>
+    <View style={styles.section}>
       <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
-      {notifications.slice(0, 3).map(notification => (
-        <View key={notification.id} style={styles.notificationItem}>
-          <View style={styles.notificationContent}>
-            <Text style={styles.notificationMessage}>{notification.mensaje}</Text>
-            <Text style={styles.notificationTime}>{timeAgo(notification.created_at)}</Text>
+      <View>
+        {notificationsToShow.map(item => (
+          <View key={item.id} style={styles.notificationItem}>
+            <View style={styles.notificationContent}>
+              <ExpandableText text={item.mensaje} maxLength={60} />
+              <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
+            </View>
+            <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(item.mensaje) }]} />
           </View>
-          <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.mensaje) }]} />
-        </View>
-      ))}
+        ))}
+      </View>
       {notifications.length > 3 && (
-        <Text style={styles.seeMore}>Ver todas</Text>
+        <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
+          <Text style={styles.seeMore}>{isExpanded ? 'Ver menos' : 'Ver todas'}</Text>
+        </TouchableOpacity>
       )}
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -83,8 +85,7 @@ const styles = StyleSheet.create({
     elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2,
   },
   notificationContent: { flex: 1 },
-  notificationMessage: { fontSize: 14, color: '#333', marginBottom: 4 },
-  notificationTime: { fontSize: 12, color: '#999' },
+  notificationTime: { fontSize: 12, color: '#999', marginTop: 4 },
   notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
   seeMore: {
     marginTop: 10,
