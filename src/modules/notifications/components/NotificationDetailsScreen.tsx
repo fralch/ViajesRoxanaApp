@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { useNotifications, useAuth } from '../../../shared/hooks';
 import { timeAgo } from '../../../shared/utils';
 
 const NotificationDetailsScreen = () => {
   const { user } = useAuth();
-  const { notifications, isLoading, error } = useNotifications(user?.dni || null);
+  const { notifications, isLoading, error, refresh } = useNotifications(user?.dni || null);
 
   if (isLoading) {
     return (
@@ -39,11 +40,19 @@ const NotificationDetailsScreen = () => {
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <View style={styles.notificationItem}>
-          <Text style={styles.notificationMessage}>{item.mensaje}</Text>
-          <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
+          <View style={[styles.iconWrap]}>
+            <Feather name="bell" size={18} color="#d62d28" />
+          </View>
+          <View style={styles.itemContent}>
+            <Text style={styles.notificationMessage}>{item.mensaje}</Text>
+            <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
+          </View>
         </View>
       )}
       contentContainerStyle={styles.container}
+      onRefresh={refresh}
+      refreshing={isLoading}
+      ListFooterComponent={<View style={{ height: 8 }} />}
     />
   );
 };
@@ -64,24 +73,28 @@ const styles = StyleSheet.create({
   },
   notificationItem: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 8,
-    elevation: 1,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
   },
+  iconWrap: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#fde3e3', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  itemContent: { flex: 1 },
   notificationMessage: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#333',
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: 12,
     color: '#999',
-    textAlign: 'right',
+    marginTop: 2,
   },
 });
 

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Feather } from '@expo/vector-icons';
 import { useNotifications, useAuth } from '../../../shared/hooks';
 import { timeAgo } from '../../../shared/utils';
 import { ExpandableText } from '../../../shared/components';
@@ -13,9 +15,9 @@ const getNotificationColor = (type: string) => {
 };
 
 const NotificationsScreen = () => {
+  const navigation = useNavigation<any>();
   const { user } = useAuth();
-  const { notifications, isLoading, error } = useNotifications(user?.dni || null);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const { notifications, isLoading, error, refresh } = useNotifications(user?.dni || null);
 
   if (isLoading) {
     return (
@@ -42,27 +44,44 @@ const NotificationsScreen = () => {
     );
   }
 
-  const notificationsToShow = isExpanded ? notifications : notifications.slice(0, 3);
+  const notificationsToShow = notifications.slice(0, 3);
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
-      <View>
-        {notificationsToShow.map(item => (
-          <View key={item.id} style={styles.notificationItem}>
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>Notificaciones</Text>
+        {notifications.length > 0 && (
+          <TouchableOpacity onPress={() => navigation.navigate('NotificationDetails')}>
+            <Text style={styles.seeAll}>Ver todas</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <FlatList
+        data={notificationsToShow}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.notificationItem} onPress={() => navigation.navigate('NotificationDetails')}>
+            <View style={[styles.iconWrap, { backgroundColor: getNotificationColor(item.mensaje) + '22' }]}>
+              <Feather name="bell" size={18} color={getNotificationColor(item.mensaje)} />
+            </View>
             <View style={styles.notificationContent}>
-              <ExpandableText text={item.mensaje} maxLength={60} />
+              <ExpandableText text={item.mensaje} maxLength={70} />
               <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
             </View>
-            <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(item.mensaje) }]} />
-          </View>
-        ))}
-      </View>
-      {notifications.length > 3 && (
-        <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
-          <Text style={styles.seeMore}>{isExpanded ? 'Ver menos' : 'Ver todas'}</Text>
-        </TouchableOpacity>
-      )}
+          </TouchableOpacity>
+        )}
+        ListFooterComponent={
+          notifications.length > 3 ? (
+            <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('NotificationDetails')}>
+              <Text style={styles.footerButtonText}>Ver todas las notificaciones</Text>
+              <Feather name="arrow-right" size={16} color="#d62d28" />
+            </TouchableOpacity>
+          ) : null
+        }
+        onRefresh={refresh}
+        refreshing={isLoading}
+      />
     </View>
   );
 };
@@ -79,20 +98,22 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   section: { marginHorizontal: 20, marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 12 },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
+  seeAll: { color: '#d62d28', fontWeight: '600' },
   notificationItem: {
-    backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 8, flexDirection: 'row', alignItems: 'center',
-    elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2,
+    backgroundColor: '#fff', padding: 14, borderRadius: 12, marginBottom: 10, flexDirection: 'row', alignItems: 'center',
+    elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 4,
+    borderLeftWidth: 3, borderLeftColor: '#eee'
+  },
+  iconWrap: {
+    width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 12,
   },
   notificationContent: { flex: 1 },
   notificationTime: { fontSize: 12, color: '#999', marginTop: 4 },
   notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
-  seeMore: {
-    marginTop: 10,
-    textAlign: 'center',
-    color: '#d62d28',
-    fontWeight: 'bold',
-  },
+  footerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
+  footerButtonText: { color: '#d62d28', fontWeight: '600' },
 });
 
 export default NotificationsScreen;

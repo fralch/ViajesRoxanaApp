@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Notification } from '../types';
 import { NotificationService } from '../services/notificationService';
 
@@ -7,27 +7,26 @@ export const useNotifications = (dni: string | null) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchNotifications = useCallback(async () => {
     if (!dni) {
       setNotifications([]);
       return;
     }
-
-    const fetchNotifications = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await NotificationService.getNotifications(dni);
-        setNotifications(data);
-      } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching notifications.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchNotifications();
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await NotificationService.getNotifications(dni);
+      setNotifications(data);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while fetching notifications.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [dni]);
 
-  return { notifications, isLoading, error };
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  return { notifications, isLoading, error, refresh: fetchNotifications };
 };
