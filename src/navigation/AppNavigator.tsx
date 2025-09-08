@@ -16,6 +16,7 @@ import PaymentsListScreen from '../modules/payments/components/PaymentsListScree
 import LiveLocationScreen from '../modules/location/components/LiveLocationScreen';
 import MapScreen from '../modules/location/components/MapScreen';
 import WelcomeScreen from '../modules/authentication/components/WelcomeScreen';
+import NotificationDetailsScreen from '../modules/notifications/components/NotificationDetailsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -136,6 +137,17 @@ function MainStackNavigator() {
           headerStyle: { backgroundColor: '#d62d28' },
           headerTintColor: '#fff',
           headerTitle: 'Mapa de Ubicación',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+      <Stack.Screen 
+        name="NotificationDetails" 
+        component={NotificationDetailsScreen}
+        options={{
+          headerShown: true,
+          headerStyle: { backgroundColor: '#d62d28' },
+          headerTintColor: '#fff',
+          headerTitle: 'Notificaciones',
           headerTitleStyle: { fontWeight: 'bold' },
         }}
       />

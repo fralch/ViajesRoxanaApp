@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNotifications } from '../../../shared/hooks';
+import { useNavigation } from '@react-navigation/native';
+import { useNotifications, useAuth } from '../../../shared/hooks';
 import { timeAgo } from '../../../shared/utils';
 
 const getNotificationColor = (type: string) => {
@@ -11,8 +12,14 @@ const getNotificationColor = (type: string) => {
   return '#757575';
 };
 
-const NotificationsScreen = ({ dni }: { dni: string | null }) => {
-  const { notifications, isLoading, error } = useNotifications(dni);
+const NotificationsScreen = () => {
+  const { user } = useAuth();
+  const { notifications, isLoading, error } = useNotifications(user?.dni || null);
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    navigation.navigate('NotificationDetails');
+  };
 
   if (isLoading) {
     return (
@@ -40,18 +47,21 @@ const NotificationsScreen = ({ dni }: { dni: string | null }) => {
   }
 
   return (
-    <View style={styles.section}>
+    <TouchableOpacity onPress={handlePress} style={styles.section}>
       <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
-      {notifications.map(notification => (
-        <TouchableOpacity key={notification.id} style={styles.notificationItem}>
+      {notifications.slice(0, 3).map(notification => (
+        <View key={notification.id} style={styles.notificationItem}>
           <View style={styles.notificationContent}>
             <Text style={styles.notificationMessage}>{notification.mensaje}</Text>
             <Text style={styles.notificationTime}>{timeAgo(notification.created_at)}</Text>
           </View>
           <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.mensaje) }]} />
-        </TouchableOpacity>
+        </View>
       ))}
-    </View>
+      {notifications.length > 3 && (
+        <Text style={styles.seeMore}>Ver todas</Text>
+      )}
+    </TouchableOpacity>
   );
 };
 
@@ -76,6 +86,12 @@ const styles = StyleSheet.create({
   notificationMessage: { fontSize: 14, color: '#333', marginBottom: 4 },
   notificationTime: { fontSize: 12, color: '#999' },
   notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
+  seeMore: {
+    marginTop: 10,
+    textAlign: 'center',
+    color: '#d62d28',
+    fontWeight: 'bold',
+  },
 });
 
 export default NotificationsScreen;

@@ -311,8 +311,8 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
       </View>
 
       {/* Notificaciones (ligadas al usuario/padre) */}
-      {selectedChild && (
-        <NotificationsScreen dni={userDni} />
+      {userDni && (
+        <NotificationsScreen />
       )}
     </ScrollView>
     </>
