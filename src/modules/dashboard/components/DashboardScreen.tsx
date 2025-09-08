@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar, Alert } from 'react-native';
 import { FontAwesome, FontAwesome6, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../shared/hooks';
+import { NotificationsScreen } from '../../notifications';
 
 // Types for API data
 interface Child {
@@ -316,31 +317,11 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
 
       {/* Notificaciones (ligadas al hijo seleccionado) */}
       {selectedChild && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notificaciones Recientes</Text>
-          {selectedChild.notifications.map(notification => (
-            <TouchableOpacity key={notification.id} style={styles.notificationItem}>
-              <View style={styles.notificationContent}>
-                <Text style={styles.notificationMessage}>{notification.message}</Text>
-                <Text style={styles.notificationTime}>hace {notification.time}</Text>
-              </View>
-              <View style={[styles.notificationDot, { backgroundColor: getNotificationColor(notification.type) }]} />
-            </TouchableOpacity>
-          ))}
-        </View>
+        <NotificationsScreen notifications={selectedChild.notifications} />
       )}
     </ScrollView>
     </>
   );
-};
-
-const getNotificationColor = (type: string) => {
-  switch (type) {
-    case 'location': return '#4CAF50';
-    case 'medical': return '#FF9800';
-    case 'payment': return '#d62d28';
-    default: return '#757575';
-  }
 };
 
 const styles = StyleSheet.create({
@@ -401,14 +382,6 @@ const styles = StyleSheet.create({
   actionIcon: { marginBottom: 8 },
   actionTitle: { fontSize: 14, fontWeight: '600', color: '#333', textAlign: 'center' },
 
-  notificationItem: {
-    backgroundColor: '#fff', padding: 16, borderRadius: 10, marginBottom: 8, flexDirection: 'row', alignItems: 'center',
-    elevation: 1, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2,
-  },
-  notificationContent: { flex: 1 },
-  notificationMessage: { fontSize: 14, color: '#333', marginBottom: 4 },
-  notificationTime: { fontSize: 12, color: '#999' },
-  notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
   seeAllButton: { paddingVertical: 12, alignItems: 'center' },
   seeAllText: { color: '#d62d28', fontWeight: '600', fontSize: 14 },
   tripChild: {
