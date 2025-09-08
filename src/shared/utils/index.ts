@@ -88,6 +88,48 @@ export const truncateText = (text: string, maxLength: number): string => {
   return text.slice(0, maxLength) + '...';
 };
 
+// URL utilities
+export const extractUrls = (text: string): string[] => {
+  if (!text) return [];
+  const urls = new Set<string>();
+  const schemeRegex = /\bhttps?:\/\/[^\s]+/gi;
+  const wwwRegex = /\bwww\.[^\s]+/gi;
+  // Matches domains that contain .com with optional path/query
+  const dotComRegex = /\b(?:[a-z0-9-]+\.)*[a-z0-9-]+\.com(?:[^\s]*)/gi;
+
+  const normalize = (u: string) => {
+    const trimmed = u.replace(/[),.;]+$/g, '');
+    return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  };
+
+  let match: RegExpExecArray | null;
+  while ((match = schemeRegex.exec(text)) !== null) {
+    urls.add(normalize(match[0]));
+  }
+  while ((match = wwwRegex.exec(text)) !== null) {
+    urls.add(normalize(match[0]));
+  }
+  while ((match = dotComRegex.exec(text)) !== null) {
+    urls.add(normalize(match[0]));
+  }
+
+  return Array.from(urls);
+};
+
+// Remove URLs (including plain .com domains) from text
+export const removeUrls = (text: string): string => {
+  if (!text) return '';
+  const schemeRegex = /\bhttps?:\/\/[^\s]+/gi;
+  const wwwRegex = /\bwww\.[^\s]+/gi;
+  const dotComRegex = /\b(?:[a-z0-9-]+\.)*[a-z0-9-]+\.com(?:[^\s]*)/gi;
+  return text
+    .replace(schemeRegex, '')
+    .replace(wwwRegex, '')
+    .replace(dotComRegex, '')
+    .replace(/\s{2,}/g, ' ') // collapse extra spaces
+    .trim();
+};
+
 // Validation utilities
 export const validateEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 interface ExpandableTextProps {
   text: string;
   maxLength?: number;
+  inlineAction?: React.ReactNode;
 }
 
-const ExpandableText: React.FC<ExpandableTextProps> = ({ text, maxLength = 60 }) => {
+const ExpandableText: React.FC<ExpandableTextProps> = ({ text, maxLength = 60, inlineAction }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleExpanded = () => {
-    setIsExpanded(!isExpanded);
+    setIsExpanded(prev => !prev);
   };
 
+  const Row = ({ content }: { content: string }) => (
+    <View style={styles.rowWrap}>
+      <Text style={styles.text}>{content}</Text>
+      {inlineAction ? <View style={styles.inlineActionWrap}>{inlineAction}</View> : null}
+    </View>
+  );
+
   if (text.length <= maxLength) {
-    return <Text style={styles.text}>{text}</Text>;
+    return <Row content={text} />;
   }
 
+  const short = `${text.substring(0, maxLength)}...`;
+
   return (
-    <TouchableOpacity onPress={toggleExpanded}>
-      <Text style={styles.text}>
-        {isExpanded ? text : `${text.substring(0, maxLength)}...`}
+    <TouchableOpacity onPress={toggleExpanded} activeOpacity={0.7}>
+      <View>
+        <Row content={isExpanded ? text : short} />
         <Text style={styles.seeMore}>{isExpanded ? ' ver menos' : ' ver más'}</Text>
-      </Text>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -31,6 +41,15 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 14,
     color: '#333',
+    marginBottom: 4,
+  },
+  rowWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  inlineActionWrap: {
     marginBottom: 4,
   },
   seeMore: {

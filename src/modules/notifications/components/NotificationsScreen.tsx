@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
 import { useNotifications, useAuth } from '../../../shared/hooks';
-import { timeAgo } from '../../../shared/utils';
+import { timeAgo, extractUrls } from '../../../shared/utils';
 import { ExpandableText } from '../../../shared/components';
 
 const getNotificationColor = (type: string) => {
@@ -17,7 +17,7 @@ const getNotificationColor = (type: string) => {
 const NotificationsScreen = () => {
   const navigation = useNavigation<any>();
   const { user } = useAuth();
-  const { notifications, isLoading, error, refresh } = useNotifications(user?.dni || null);
+  const { notifications, isLoading, error } = useNotifications(user?.dni || null);
 
   if (isLoading) {
     return (
@@ -57,31 +57,45 @@ const NotificationsScreen = () => {
         )}
       </View>
 
-      <FlatList
-        data={notificationsToShow}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.notificationItem} onPress={() => navigation.navigate('NotificationDetails')}>
-            <View style={[styles.iconWrap, { backgroundColor: getNotificationColor(item.mensaje) + '22' }]}>
-              <Feather name="bell" size={18} color={getNotificationColor(item.mensaje)} />
-            </View>
-            <View style={styles.notificationContent}>
-              <ExpandableText text={item.mensaje} maxLength={70} />
-              <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        ListFooterComponent={
-          notifications.length > 3 ? (
-            <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('NotificationDetails')}>
-              <Text style={styles.footerButtonText}>Ver todas las notificaciones</Text>
-              <Feather name="arrow-right" size={16} color="#d62d28" />
+      <View>
+        {notificationsToShow.map((item) => {
+          const urls = extractUrls(item.mensaje);
+          const openFirstUrl = async () => {
+            if (urls.length === 0) return;
+            const url = urls[0];
+            try {
+              const supported = await Linking.canOpenURL(url);
+              if (supported) {
+                await Linking.openURL(url);
+              } else {
+                Alert.alert('No se puede abrir el enlace', url);
+              }
+            } catch (e) {
+              Alert.alert('Error al abrir el enlace');
+            }
+          };
+          return (
+            <TouchableOpacity key={item.id} style={styles.notificationItem} onPress={() => navigation.navigate('NotificationDetails')}>
+              <View style={[styles.iconWrap, { backgroundColor: getNotificationColor(item.mensaje) + '22' }]}>
+                <Feather name="bell" size={18} color={getNotificationColor(item.mensaje)} />
+              </View>
+              <View style={styles.notificationContent}>
+                <ExpandableText text={item.mensaje} maxLength={70} />
+                <View style={styles.rowBetween}>
+                  <Text style={styles.notificationTime}>{timeAgo(item.created_at)}</Text>
+                  {urls.length > 0 && (
+                    <TouchableOpacity onPress={openFirstUrl} style={styles.linkButton}>
+                      <Feather name="external-link" size={14} color="#d62d28" />
+                      <Text style={styles.linkButtonText}>Abrir enlace</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
             </TouchableOpacity>
-          ) : null
-        }
-        onRefresh={refresh}
-        refreshing={isLoading}
-      />
+          );
+        })}
+       
+      </View>
     </View>
   );
 };
@@ -110,8 +124,11 @@ const styles = StyleSheet.create({
     width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', marginRight: 12,
   },
   notificationContent: { flex: 1 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   notificationTime: { fontSize: 12, color: '#999', marginTop: 4 },
   notificationDot: { width: 8, height: 8, borderRadius: 4, marginLeft: 12 },
+  linkButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 4, paddingHorizontal: 8, borderRadius: 6, backgroundColor: '#fde3e3' },
+  linkButtonText: { color: '#d62d28', fontWeight: '600', fontSize: 12 },
   footerButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
   footerButtonText: { color: '#d62d28', fontWeight: '600' },
 });
