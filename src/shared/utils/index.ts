@@ -29,6 +29,39 @@ export const formatDate = (date: string | Date, format: 'short' | 'long' | 'time
   }
 };
 
+// Date range formatting (Spanish)
+export const formatDateRange = (start: string | Date, end: string | Date): string => {
+  const s = typeof start === 'string' ? new Date(start) : start;
+  const e = typeof end === 'string' ? new Date(end) : end;
+
+  if (isNaN(s.getTime()) || isNaN(e.getTime())) return '';
+
+  const fmtDay = new Intl.DateTimeFormat('es-PE', { day: 'numeric' });
+  const fmtMonth = new Intl.DateTimeFormat('es-PE', { month: 'long' });
+  const fmtMonthYear = new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' });
+  const fmtFull = new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const sameYear = s.getFullYear() === e.getFullYear();
+  const sameMonth = sameYear && s.getMonth() === e.getMonth();
+
+  if (sameMonth) {
+    const dayStart = fmtDay.format(s);
+    const dayEnd = fmtDay.format(e);
+    const monthYear = fmtMonthYear.format(e); // e.g., "septiembre de 2025"
+    return `Del ${dayStart} al ${dayEnd} de ${monthYear}`;
+  }
+
+  if (sameYear) {
+    const startPart = `${fmtDay.format(s)} de ${fmtMonth.format(s)}`;
+    const endPart = `${fmtDay.format(e)} de ${fmtMonth.format(e)} de ${e.getFullYear()}`;
+    return `Del ${startPart} al ${endPart}`;
+  }
+
+  const startFull = fmtFull.format(s);
+  const endFull = fmtFull.format(e);
+  return `Del ${startFull} al ${endFull}`;
+};
+
 // Currency formatting
 export const formatCurrency = (amount: number, currency: string = 'S/'): string => {
   return `${currency} ${amount.toFixed(2)}`;

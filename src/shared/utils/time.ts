@@ -25,3 +25,23 @@ export const timeAgo = (dateString: string): string => {
   }
   return Math.floor(seconds) + " segundos";
 };
+
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    // Adjust for timezone offset to prevent off-by-one day errors
+    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+    const correctedDate = new Date(date.getTime() + userTimezoneOffset);
+
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
+    return correctedDate.toLocaleDateString('es-ES', options);
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return dateString; // Return original string if formatting fails
+  }
+};

@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar, Alert } from 'react-native';
 import { FontAwesome, FontAwesome6, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../../shared/hooks';
+import { formatDateRange } from '../../../shared/utils';
 import { NotificationsScreen } from '../../notifications';
 
 // Types for API data
@@ -185,7 +186,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
       name: child.nombres,
       trip: {
         destination: pkg?.destino || "Sin destino asignado",
-        dates: group ? `${group.fecha_inicio} - ${group.fecha_fin}` : "Sin fechas",
+        dates: group ? formatDateRange(group.fecha_inicio, group.fecha_fin) : "Sin fechas",
         group: group?.nombre || "Sin grupo asignado",
         responsible: group?.nombre_encargado?.[0] || group?.nombre_encargado_agencia?.[0] || "Sin responsable",
       },
