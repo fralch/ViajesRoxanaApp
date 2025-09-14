@@ -9,6 +9,7 @@ import {
   Image,
   StatusBar,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -16,7 +17,7 @@ import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated'
 import ParentLoginModal from './ParentLoginModal';
 import ChildLoginModal from './ChildLoginModal';
 
-const { height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 // --- Enhanced Design System ---
 const COLORS = {
@@ -38,25 +39,40 @@ const COLORS = {
   gradient: ['#d62d28', '#e85550'],
 };
 
-const SPACING = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  xxl: 48,
-  xxxl: 64,
+// Responsive spacing based on screen height
+const getSpacing = () => {
+  const isSmallScreen = height < 700;
+  const isMediumScreen = height < 800;
+  
+  return {
+    xs: 4,
+    sm: 8,
+    md: isSmallScreen ? 12 : 16,
+    lg: isSmallScreen ? 16 : 24,
+    xl: isSmallScreen ? 20 : 32,
+    xxl: isSmallScreen ? 32 : 48,
+    xxxl: isSmallScreen ? 40 : 64,
+  };
 };
 
-const TYPOGRAPHY = {
-  hero: 36,
-  title: 28,
-  heading: 24,
-  subheading: 20,
-  body: 16,
-  caption: 14,
-  small: 12,
+const SPACING = getSpacing();
+
+// Responsive typography
+const getTypography = () => {
+  const isSmallScreen = height < 700;
+  
+  return {
+    hero: isSmallScreen ? 28 : 36,
+    title: isSmallScreen ? 24 : 28,
+    heading: isSmallScreen ? 20 : 24,
+    subheading: isSmallScreen ? 18 : 20,
+    body: 16,
+    caption: 14,
+    small: 12,
+  };
 };
+
+const TYPOGRAPHY = getTypography();
 
 const RADIUS = {
   sm: 8,
@@ -80,13 +96,23 @@ const WelcomeScreen = () => {
     setChildModalVisible(true);
   };
 
+  // Responsive values
+  const isSmallScreen = height < 700;
+  const heroMinHeight = Math.max(height * 0.5, 400);
+  const ctaMinHeight = Math.max(height * 0.45, 350);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-      <View style={styles.container}>
+      <ScrollView 
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={false}
+      >
         {/* Hero Section */}
-        <View style={styles.heroSection}>
+        <View style={[styles.heroSection, { minHeight: heroMinHeight }]}>
           {/* Logo Container with Enhanced Animation */}
           <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.logoContainer}>
             <View style={styles.logoBackground}>
@@ -103,28 +129,32 @@ const WelcomeScreen = () => {
 
           {/* Welcome Text */}
           <Animated.View entering={FadeInUp.delay(300).springify()} style={styles.welcomeTextContainer}>
-            <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
+            <Text style={styles.welcomeTitle} adjustsFontSizeToFit numberOfLines={1}>
+              ¡Bienvenido!
+            </Text>
             <Text style={styles.welcomeSubtitle}>
               Tu compañero de confianza para viajes seguros y tranquilos
             </Text>
           </Animated.View>
 
           {/* Visual Enhancement - Floating Icons */}
-          <Animated.View entering={FadeIn.delay(800).duration(1000)} style={styles.floatingIcons}>
-            <View style={[styles.floatingIcon, styles.icon1]}>
-              <FontAwesome name="shield" size={16} color={COLORS.primary} />
-            </View>
-            <View style={[styles.floatingIcon, styles.icon2]}>
-              <FontAwesome name="heart" size={14} color={COLORS.primary} />
-            </View>
-            <View style={[styles.floatingIcon, styles.icon3]}>
-              <FontAwesome6 name="location-dot" size={15} color={COLORS.primary} />
-            </View>
-          </Animated.View>
+          {!isSmallScreen && (
+            <Animated.View entering={FadeIn.delay(800).duration(1000)} style={styles.floatingIcons}>
+              <View style={[styles.floatingIcon, styles.icon1]}>
+                <FontAwesome name="shield" size={16} color={COLORS.primary} />
+              </View>
+              <View style={[styles.floatingIcon, styles.icon2]}>
+                <FontAwesome name="heart" size={14} color={COLORS.primary} />
+              </View>
+              <View style={[styles.floatingIcon, styles.icon3]}>
+                <FontAwesome6 name="location-dot" size={15} color={COLORS.primary} />
+              </View>
+            </Animated.View>
+          )}
         </View>
 
         {/* CTA Section */}
-        <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.ctaSection}>
+        <Animated.View entering={FadeInDown.delay(500).springify()} style={[styles.ctaSection, { minHeight: ctaMinHeight }]}>
           <View style={styles.ctaHeader}>
             <Text style={styles.ctaTitle}>Empezar ahora</Text>
             <Text style={styles.ctaSubtitle}>Selecciona cómo quieres acceder</Text>
@@ -188,7 +218,7 @@ const WelcomeScreen = () => {
             <Text style={styles.legalLink}>Política de Privacidad</Text>
           </Animated.Text>
         </Animated.View>
-      </View>
+      </ScrollView>
 
       <ParentLoginModal
         visible={parentModalVisible}
@@ -208,36 +238,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  container: {
+  scrollContainer: {
     flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   
   // Hero Section
   heroSection: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.xxxl,
+    paddingTop: SPACING.lg,
+    paddingBottom: SPACING.md,
     position: 'relative',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: SPACING.xxxl,
+    marginBottom: SPACING.xl,
     position: 'relative',
   },
   logoBackground: {
-    width: 140,
-    height: 140,
+    width: height < 700 ? 120 : 140,
+    height: height < 700 ? 120 : 140,
     borderRadius: RADIUS.xxl,
     backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-  
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 1,
+    shadowRadius: 16,
+    elevation: 12,
   },
   logo: {
-    width: 90,
-    height: 90,
+    width: height < 700 ? 75 : 90,
+    height: height < 700 ? 75 : 90,
   },
   
   // Decorative Elements
@@ -318,7 +355,7 @@ const styles = StyleSheet.create({
   ctaSection: {
     backgroundColor: COLORS.white,
     paddingHorizontal: SPACING.xl,
-    paddingTop: SPACING.xxxl,
+    paddingTop: SPACING.xl,
     paddingBottom: SPACING.xl,
     borderTopLeftRadius: RADIUS.xxl,
     borderTopRightRadius: RADIUS.xxl,
@@ -327,11 +364,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 1,
     shadowRadius: 20,
     elevation: 20,
-    minHeight: height * 0.4,
   },
   ctaHeader: {
     alignItems: 'center',
-    marginBottom: SPACING.xxxl,
+    marginBottom: SPACING.xl,
   },
   ctaTitle: {
     fontSize: TYPOGRAPHY.title,
@@ -348,7 +384,7 @@ const styles = StyleSheet.create({
   // Enhanced Buttons
   buttonContainer: {
     gap: SPACING.lg,
-    marginBottom: SPACING.xxxl,
+    marginBottom: SPACING.xl,
   },
   userButton: {
     borderRadius: RADIUS.xl,
@@ -370,14 +406,14 @@ const styles = StyleSheet.create({
   buttonContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: SPACING.xl,
+    padding: SPACING.lg,
   },
   buttonIconWrapper: {
     marginRight: SPACING.lg,
   },
   buttonIconContainer: {
-    width: 56,
-    height: 56,
+    width: height < 700 ? 48 : 56,
+    height: height < 700 ? 48 : 56,
     borderRadius: RADIUS.lg,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',

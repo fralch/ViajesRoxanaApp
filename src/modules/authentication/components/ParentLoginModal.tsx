@@ -57,7 +57,7 @@ const COLORS = {
   textMuted: '#6B7280',
   textSubtle: '#374151',
   border: '#E5E7EB',
-  primary: '#4A90E2',
+  primary: '#d62d28',
 };
 
 const SIZES = {

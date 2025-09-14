@@ -29,7 +29,11 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
 
   const handleLogin = async () => {
     try {
-      await login(email, password);
+      await login({
+        emailPhone: email,
+        password: password,
+        remember: rememberMe
+      });
       onClose();
     } catch (error) {
       console.error('Login error:', error);
@@ -154,10 +158,10 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
 };
 
 const COLORS = {
-  primary: '#7ED321', // Verde juvenil
-  secondary: '#FFB347', // Naranja amigable
-  accent: '#FF6B9D', // Rosa divertido
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  primary: '#FF6B47', // Rojo-naranja juvenil
+  secondary: '#FF8A65', // Naranja-rojizo amigable
+  accent: '#FF5722', // Rojo vibrante
+  background: 'linear-gradient(135deg, #ff6b47 0%, #ff8a65 100%)',
   cardBg: '#ffffff',
   text: '#2D3748',
   textSecondary: '#4A5568',
@@ -165,7 +169,7 @@ const COLORS = {
   border: '#E2E8F0',
   shadow: 'rgba(0, 0, 0, 0.1)',
   white: '#ffffff',
-  overlayBg: 'rgba(102, 126, 234, 0.3)',
+  overlayBg: 'rgba(92, 92, 92, 0.3)',
 };
 
 const styles = StyleSheet.create({
