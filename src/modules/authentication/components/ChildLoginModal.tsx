@@ -156,10 +156,10 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
 };
 
 const COLORS = {
-  primary: '#FF6B47', // Rojo-naranja juvenil
-  secondary: '#FF8A65', // Naranja-rojizo amigable
-  accent: '#FF5722', // Rojo vibrante
-  background: 'linear-gradient(135deg, #ff6b47 0%, #ff8a65 100%)',
+  primary: '#d52e27', // Rojo-naranja juvenil
+  secondary: '#d52e27', // Naranja-rojizo amigable
+  accent: '#d52e27', // Rojo vibrante
+  background: 'linear-gradient(135deg, #d52e27 0%, #ff8a65 100%)',
   cardBg: '#ffffff',
   text: '#2D3748',
   textSecondary: '#4A5568',
