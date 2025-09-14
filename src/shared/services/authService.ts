@@ -37,6 +37,11 @@ export class AuthService {
    * Realiza el login con el endpoint real
    */
   static async login(credentials: LoginRequest): Promise<LoginApiResponse> {
+    // Si es login de hijo, usar datos de prueba
+    if (credentials.user_type === 'child') {
+      return this.mockChildLogin(credentials);
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/endpoint/login`, {
         method: 'POST',
@@ -53,7 +58,7 @@ export class AuthService {
       }
 
       const data: LoginApiResponse = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Error en el login');
       }
@@ -61,13 +66,97 @@ export class AuthService {
       return data;
     } catch (error) {
       console.error('AuthService.login error:', error);
-      
+
       if (error instanceof Error) {
         throw error;
       }
-      
+
       throw new Error('Error de conexión. Verifica tu internet e intenta nuevamente.');
     }
+  }
+
+  /**
+   * Mock login para hijos (acepta cualquier credencial)
+   */
+  static async mockChildLogin(credentials: LoginRequest): Promise<LoginApiResponse> {
+    // Simular delay de red
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Generar datos de prueba basados en las credenciales ingresadas
+    const childName = credentials.email === '12345678' ? 'Sofía García' :
+                     credentials.email === '87654321' ? 'Diego López' :
+                     `Niño ${credentials.email}`;
+
+    return {
+      success: true,
+      message: "Login exitoso",
+      user: {
+        id: parseInt(credentials.email) || 12345,
+        name: childName,
+        email: `${credentials.email}@child.test`,
+        phone: "000000000",
+        dni: credentials.email,
+        email_verified_at: new Date().toISOString(),
+        is_admin: false,
+        created_at: "2024-01-01T00:00:00.000000Z",
+        updated_at: new Date().toISOString(),
+        hijos: [{
+          id: parseInt(credentials.email) || 12345,
+          user_id: 1,
+          nombres: childName,
+          doc_tipo: "DNI",
+          doc_numero: credentials.email,
+          nums_emergencia: ["999888777", "987654321"],
+          fecha_nacimiento: "2015-03-15T00:00:00.000000Z",
+          foto: null,
+          pasatiempos: "Dibujar, leer cuentos, jugar videojuegos",
+          deportes: "Natación, fútbol",
+          plato_favorito: "Pizza con piña",
+          color_favorito: "Azul y rosa",
+          informacion_adicional: "Le encanta explorar y hacer nuevos amigos. Es muy creativo y curioso.",
+          created_at: "2024-01-01T00:00:00.000000Z",
+          updated_at: new Date().toISOString(),
+          inscripciones: [{
+            id: 1,
+            hijo_id: parseInt(credentials.email) || 12345,
+            paquete_id: 1,
+            grupo_id: 1,
+            usuario_id: 1,
+            created_at: "2024-01-01T00:00:00.000000Z",
+            updated_at: new Date().toISOString(),
+            grupo: {
+              id: 1,
+              paquete_id: 1,
+              nombre: "Aventureros Espaciales",
+              fecha_inicio: "2025-10-01",
+              fecha_fin: "2025-10-07",
+              capacidad: 25,
+              tipo_encargado: ["Profesor"],
+              nombre_encargado: ["María González"],
+              celular_encargado: ["999888777"],
+              tipo_encargado_agencia: ["Guía Turístico"],
+              nombre_encargado_agencia: ["Carlos Adventure"],
+              celular_encargado_agencia: ["987654321"],
+              activo: true,
+              created_at: "2024-01-01T00:00:00.000000Z",
+              updated_at: new Date().toISOString(),
+              paquete: {
+                id: 1,
+                nombre: "Aventura Espacial",
+                destino: "Planetario y Centro de Ciencias",
+                descripcion: "¡Explora el espacio y las estrellas!",
+                activo: true,
+                created_at: "2024-01-01T00:00:00.000000Z",
+                updated_at: new Date().toISOString()
+              }
+            }
+          }]
+        }], // Para mantener compatibilidad con el dashboard
+        is_child: true,
+        parent_id: 1
+      },
+      token: `child_token_${credentials.email}_${Date.now()}`
+    };
   }
 
   /**
@@ -84,9 +173,24 @@ export class AuthService {
   static validateCredentials(credentials: LoginRequest): { isValid: boolean; errors: string[] } {
     const errors: string[] = [];
 
+    // Para hijos en desarrollo, validación muy permisiva
+    if (credentials.user_type === 'child') {
+      if (!credentials.email || credentials.email.trim() === '') {
+        errors.push('Ingresa cualquier número para probar');
+      }
+      if (!credentials.password || credentials.password.trim() === '') {
+        errors.push('Ingresa cualquier contraseña para probar');
+      }
+      return {
+        isValid: errors.length === 0,
+        errors
+      };
+    }
+
+    // Validación normal para padres
     if (!credentials.email || credentials.email.trim() === '') {
-      errors.push(credentials.user_type === 'child' ? 'El DNI es requerido' : 'El email es requerido');
-    } else if (credentials.user_type === 'parent' && !this.validateEmail(credentials.email)) {
+      errors.push('El email es requerido');
+    } else if (!this.validateEmail(credentials.email)) {
       errors.push('El formato del email no es válido');
     }
 
