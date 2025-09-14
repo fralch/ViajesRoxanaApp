@@ -8,83 +8,76 @@ import {
   SafeAreaView,
   Image,
   StatusBar,
+  Dimensions,
 } from 'react-native';
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import ModalAccess from './ModalAccess';
 
-// --- Constants for Design System ---
+const { height } = Dimensions.get('window');
+
+// --- Enhanced Design System ---
 const COLORS = {
   primary: '#d62d28',
-  white: '#fff',
-  textPrimary: '#222',
-  textSecondary: '#555',
-  textMuted: '#888',
-  background: '#fafafa',
-  border: '#e0e0e0',
+  primaryLight: '#e85550',
+  primaryDark: '#b8241f',
+  secondary: '#2c3e50',
+  accent: '#f39c12',
+  white: '#ffffff',
+  offWhite: '#fafbfc',
+  textPrimary: '#2c3e50',
+  textSecondary: '#5a6c7d',
+  textLight: '#8492a6',
+  background: '#f8f9fa',
+  cardBackground: '#ffffff',
+  border: '#e1e8ed',
+  shadow: 'rgba(44, 62, 80, 0.08)',
+  overlay: 'rgba(214, 45, 40, 0.05)',
+  gradient: ['#d62d28', '#e85550'],
 };
 
 const SPACING = {
-  small: 8,
-  medium: 16,
-  large: 24,
-  xlarge: 32,
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+  xxxl: 64,
 };
 
-const FONT_SIZES = {
-  small: 14,
-  medium: 16,
-  large: 18,
-  xlarge: 28,
+const TYPOGRAPHY = {
+  hero: 36,
+  title: 28,
+  heading: 24,
+  subheading: 20,
+  body: 16,
+  caption: 14,
+  small: 12,
 };
 
-// --- Feature Item Component with Animation ---
-interface FeatureItemProps {
-  iconName: string;
-  iconLibrary: 'FontAwesome' | 'FontAwesome6';
-  text: string;
-  index: number;
-}
-
-const FeatureItem: React.FC<FeatureItemProps> = ({ iconName, iconLibrary, text, index }) => (
-  <Animated.View
-    entering={FadeInUp.delay(300 + index * 100).springify()}
-    style={styles.featureCard}
-  >
-    <View style={styles.featureIconContainer}>
-      {iconLibrary === 'FontAwesome' ? (
-        <FontAwesome name={iconName as any} size={18} color={COLORS.primary} />
-      ) : (
-        <FontAwesome6 name={iconName as any} size={18} color={COLORS.primary} />
-      )}
-    </View>
-    <Text style={styles.featureText}>{text}</Text>
-  </Animated.View>
-);
-
-// --- Data for Features ---
-const features = [
-  { iconName: 'map-marker', iconLibrary: 'FontAwesome' as const, text: 'Ubicación en tiempo real' },
-  { iconName: 'user-md', iconLibrary: 'FontAwesome' as const, text: 'Supervision médica' },
-  { iconName: 'suitcase-rolling', iconLibrary: 'FontAwesome6' as const, text: 'Control de equipaje' },
-  { iconName: 'bell', iconLibrary: 'FontAwesome' as const, text: 'Notificaciones instantáneas' },
-];
+const RADIUS = {
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  full: 50,
+};
 
 const WelcomeScreen = () => {
   const navigation = useNavigation();
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTab, setModalTab] = useState<'login' | 'register'>('login');
 
-
-
-  const handleLogin = () => {
+  const handleParentLogin = () => {
     setModalTab('login');
     setModalVisible(true);
   };
 
-  const handleRegister = () => {
-    setModalTab('register');
+  const handleChildLogin = () => {
+    setModalTab('login');
     setModalVisible(true);
   };
 
@@ -92,63 +85,117 @@ const WelcomeScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.background} />
 
-      {/* Contenedor sin Scroll */}
       <View style={styles.container}>
-        {/* Logo/Header Section */}
-        <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.header}>
-          <Image
-            source={require('../../../shared/img/logo-cuadrado.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </Animated.View>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          {/* Logo Container with Enhanced Animation */}
+          <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.logoContainer}>
+            <View style={styles.logoBackground}>
+              <Image
+                source={require('../../../shared/img/logo-cuadrado.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            {/* Decorative Elements */}
+            <View style={[styles.decorativeCircle, styles.circle1]} />
+            <View style={[styles.decorativeCircle, styles.circle2]} />
+          </Animated.View>
 
-        {/* Features Section */}
-        <View style={styles.featuresContainer}>
-          <Animated.Text entering={FadeInDown.delay(200).springify()} style={styles.welcomeTitle}>
-            Te brindamos
-          </Animated.Text>
+          {/* Welcome Text */}
+          <Animated.View entering={FadeInUp.delay(300).springify()} style={styles.welcomeTextContainer}>
+            <Text style={styles.welcomeTitle}>¡Bienvenido!</Text>
+            <Text style={styles.welcomeSubtitle}>
+              Tu compañero de confianza para viajes seguros y tranquilos
+            </Text>
+          </Animated.View>
 
-          {features.map((feature, index) => (
-            <FeatureItem
-              key={index}
-              iconName={feature.iconName}
-              iconLibrary={feature.iconLibrary}
-              text={feature.text}
-              index={index}
-            />
-          ))}
+          {/* Visual Enhancement - Floating Icons */}
+          <Animated.View entering={FadeIn.delay(800).duration(1000)} style={styles.floatingIcons}>
+            <View style={[styles.floatingIcon, styles.icon1]}>
+              <FontAwesome name="shield" size={16} color={COLORS.primary} />
+            </View>
+            <View style={[styles.floatingIcon, styles.icon2]}>
+              <FontAwesome name="heart" size={14} color={COLORS.primary} />
+            </View>
+            <View style={[styles.floatingIcon, styles.icon3]}>
+              <FontAwesome6 name="location-dot" size={15} color={COLORS.primary} />
+            </View>
+          </Animated.View>
         </View>
+
+        {/* CTA Section */}
+        <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.ctaSection}>
+          <View style={styles.ctaHeader}>
+            <Text style={styles.ctaTitle}>Empezar ahora</Text>
+            <Text style={styles.ctaSubtitle}>Selecciona cómo quieres acceder</Text>
+          </View>
+
+          <View style={styles.buttonContainer}>
+            {/* Parent Button - Enhanced */}
+            <TouchableOpacity
+              style={[styles.userButton, styles.parentButton]}
+              onPress={handleParentLogin}
+              activeOpacity={0.85}
+              accessibilityLabel="Acceso para padres"
+            >
+              <View style={styles.buttonContent}>
+                <View style={styles.buttonIconWrapper}>
+                  <View style={styles.buttonIconContainer}>
+                    <FontAwesome name="user" size={24} color={COLORS.white} />
+                  </View>
+                </View>
+                <View style={styles.buttonTextContainer}>
+                  <Text style={styles.buttonTitle}>Padre/Madre</Text>
+                  <Text style={styles.buttonSubtitle}>Supervisar y proteger</Text>
+                </View>
+                <View style={styles.buttonArrow}>
+                  <FontAwesome name="arrow-right" size={18} color="rgba(255,255,255,0.9)" />
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            {/* Child Button - Enhanced */}
+            <TouchableOpacity
+              style={[styles.userButton, styles.childButton]}
+              onPress={handleChildLogin}
+              activeOpacity={0.85}
+              accessibilityLabel="Acceso para hijos"
+            >
+              <View style={styles.buttonContent}>
+                <View style={styles.buttonIconWrapper}>
+                  <View style={[styles.buttonIconContainer, styles.childIconContainer]}>
+                    <FontAwesome name="child" size={24} color={COLORS.primary} />
+                  </View>
+                </View>
+                <View style={styles.buttonTextContainer}>
+                  <Text style={[styles.buttonTitle, styles.childButtonTitle]}>Hijo/Hija</Text>
+                  <Text style={[styles.buttonSubtitle, styles.childButtonSubtitle]}>
+                    Mantenerse conectado
+                  </Text>
+                </View>
+                <View style={styles.buttonArrow}>
+                  <FontAwesome name="arrow-right" size={18} color={COLORS.primary} />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          {/* Enhanced Legal Text */}
+          <Animated.Text entering={FadeIn.delay(700)} style={styles.legalText}>
+            Al continuar aceptas los{' '}
+            <Text style={styles.legalLink}>Términos de Uso</Text>
+            {' '}y la{' '}
+            <Text style={styles.legalLink}>Política de Privacidad</Text>
+          </Animated.Text>
+        </Animated.View>
       </View>
 
-      {/* Footer Actions */}
-      <Animated.View entering={FadeInDown.delay(600).springify()} style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.button, styles.primaryButton]}
-          onPress={handleLogin}
-          accessibilityLabel="Iniciar sesión"
-        >
-          <Text style={styles.primaryButtonText}>Iniciar Sesión</Text>
-        </TouchableOpacity>
-      {/* 
-        <TouchableOpacity
-          style={[styles.button, styles.secondaryButton]}
-          onPress={handleRegister}
-          accessibilityLabel="Crear cuenta"
-        >
-          <Text style={styles.secondaryButtonText}>Crear Cuenta</Text>
-        </TouchableOpacity>
-         */}
-
-       
-        <Text style={styles.legalText}>
-          Al continuar, aceptas nuestros{' '}
-          <Text style={styles.link}>Términos de Servicio</Text> y{' '}
-          <Text style={styles.link}>Política de Privacidad</Text>
-        </Text>
-      </Animated.View>
-
-      <ModalAccess visible={modalVisible} onClose={() => setModalVisible(false)} initialTab={modalTab} />
+      <ModalAccess 
+        visible={modalVisible} 
+        onClose={() => setModalVisible(false)} 
+        initialTab={modalTab} 
+      />
     </SafeAreaView>
   );
 };
@@ -160,97 +207,217 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
   },
-  header: {
+  
+  // Hero Section
+  heroSection: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 16,
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.xxxl,
+    position: 'relative',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.xxxl,
+    position: 'relative',
+  },
+  logoBackground: {
+    width: 140,
+    height: 140,
+    borderRadius: RADIUS.xxl,
+    backgroundColor: COLORS.white,
+    justifyContent: 'center',
+    alignItems: 'center',
+  
   },
   logo: {
-    width: 140,   // 🔥 más grande
-    height: 140,  // 🔥 más grande
-    marginBottom: 12,
+    width: 90,
+    height: 90,
   },
-  featuresContainer: {
-    marginTop: 12,
+  
+  // Decorative Elements
+  decorativeCircle: {
+    position: 'absolute',
+    backgroundColor: COLORS.overlay,
+    borderRadius: RADIUS.full,
   },
-  welcomeTitle: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#555',
-    marginBottom: 12,
-    textAlign: 'center',
+  circle1: {
+    width: 20,
+    height: 20,
+    top: 10,
+    right: -10,
   },
-  featureCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    padding: 12,
-    marginBottom: 10,
-    borderRadius: 0
+  circle2: {
+    width: 16,
+    height: 16,
+    bottom: 20,
+    left: -5,
   },
-  featureIconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(214, 45, 40, 0.1)',
+  
+  floatingIcons: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  floatingIcon: {
+    position: 'absolute',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.white,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 14,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  featureText: {
-    fontSize: FONT_SIZES.medium,
+  icon1: {
+    top: '20%',
+    right: '15%',
+  },
+  icon2: {
+    top: '60%',
+    left: '10%',
+  },
+  icon3: {
+    top: '40%',
+    right: '5%',
+  },
+  
+  // Welcome Text
+  welcomeTextContainer: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  welcomeTitle: {
+    fontSize: TYPOGRAPHY.hero,
+    fontWeight: '800',
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginBottom: SPACING.md,
+    letterSpacing: -1,
+  },
+  welcomeSubtitle: {
+    fontSize: TYPOGRAPHY.body,
     color: COLORS.textSecondary,
-    flex: 1,
+    textAlign: 'center',
+    lineHeight: 24,
     fontWeight: '400',
   },
-  footer: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+  
+  // CTA Section
+  ctaSection: {
     backgroundColor: COLORS.white,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    paddingHorizontal: SPACING.xl,
+    paddingTop: SPACING.xxxl,
+    paddingBottom: SPACING.xl,
+    borderTopLeftRadius: RADIUS.xxl,
+    borderTopRightRadius: RADIUS.xxl,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 1,
+    shadowRadius: 20,
+    elevation: 20,
+    minHeight: height * 0.4,
   },
-  button: {
-    paddingVertical: 14,
-    borderRadius: 12,
+  ctaHeader: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.xxxl,
   },
-  primaryButton: {
-    backgroundColor: COLORS.primary,
+  ctaTitle: {
+    fontSize: TYPOGRAPHY.title,
+    fontWeight: '700',
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.sm,
   },
-  primaryButtonText: {
-    color: COLORS.white,
-    fontSize: FONT_SIZES.large,
-    fontWeight: '600',
-  },
-  secondaryButton: {
-    borderColor: COLORS.primary,
-    borderWidth: 1.5,
-  },
-  secondaryButtonText: {
-    color: COLORS.primary,
-    fontSize: FONT_SIZES.large,
-    fontWeight: '600',
-  },
-  skipText: {
+  ctaSubtitle: {
+    fontSize: TYPOGRAPHY.caption,
     color: COLORS.textSecondary,
     textAlign: 'center',
-    fontSize: FONT_SIZES.medium,
-    marginBottom: 12,
   },
-  legalText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    lineHeight: 18,
+  
+  // Enhanced Buttons
+  buttonContainer: {
+    gap: SPACING.lg,
+    marginBottom: SPACING.xxxl,
   },
-  link: {
+  userButton: {
+    borderRadius: RADIUS.xl,
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 12,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  parentButton: {
+    backgroundColor: COLORS.primary,
+  },
+  childButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  buttonIconWrapper: {
+    marginRight: SPACING.lg,
+  },
+  buttonIconContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: RADIUS.lg,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  childIconContainer: {
+    backgroundColor: COLORS.overlay,
+  },
+  buttonTextContainer: {
+    flex: 1,
+  },
+  buttonTitle: {
+    fontSize: TYPOGRAPHY.subheading,
+    fontWeight: '700',
+    color: COLORS.white,
+    marginBottom: SPACING.xs,
+  },
+  childButtonTitle: {
     color: COLORS.primary,
-    textDecorationLine: 'underline',
+  },
+  buttonSubtitle: {
+    fontSize: TYPOGRAPHY.caption,
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontWeight: '500',
+  },
+  childButtonSubtitle: {
+    color: COLORS.textSecondary,
+  },
+  buttonArrow: {
+    marginLeft: SPACING.md,
+  },
+  
+  // Legal Text
+  legalText: {
+    fontSize: TYPOGRAPHY.small,
+    color: COLORS.textLight,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: SPACING.lg,
+  },
+  legalLink: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
 });
 
