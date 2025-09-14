@@ -2,9 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Feather } from '@expo/vector-icons';
-import { useNotifications, useAuth } from '../../../shared/hooks';
-import { timeAgo, extractUrls } from '../../../shared/utils';
-import { ExpandableText } from '../../../shared/components';
+import { useNotifications, useAuth } from '../../../../shared/hooks';
+import { timeAgo, extractUrls } from '../../../../shared/utils';
+import { ExpandableText } from '../../../../shared/components';
 
 const getNotificationColor = (type: string) => {
   // Simplified logic, as the API response doesn't have a type

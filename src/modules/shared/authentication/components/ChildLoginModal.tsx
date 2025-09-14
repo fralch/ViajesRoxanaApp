@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { FontAwesome, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, BounceIn } from 'react-native-reanimated';
-import { useAuth } from '../../../shared/hooks/useAuth';
+import { useAuth } from '../../../../shared/hooks/useAuth';
 
 interface ChildLoginModalProps {
   visible: boolean;

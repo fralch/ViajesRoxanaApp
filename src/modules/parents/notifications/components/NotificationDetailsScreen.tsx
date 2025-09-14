@@ -2,8 +2,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, Linking, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useNotifications, useAuth } from '../../../shared/hooks';
-import { timeAgo, extractUrls, removeUrls } from '../../../shared/utils';
+import { useNotifications, useAuth } from '../../../../shared/hooks';
+import { timeAgo, extractUrls, removeUrls } from '../../../../shared/utils';
 
 const NotificationDetailsScreen = () => {
   const { user } = useAuth();

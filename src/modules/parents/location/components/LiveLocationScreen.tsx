@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
-import { LocationService } from '../../../shared/services';
-import { useAuth } from '../../../shared/hooks';
+import { LocationService } from '../../../../shared/services';
+import { useAuth } from '../../../../shared/hooks';
 
 const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
   const { user } = useAuth();

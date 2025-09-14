@@ -1,0 +1,1 @@
+export { default as ChildLocationScreen } from './components/ChildLocationScreen';

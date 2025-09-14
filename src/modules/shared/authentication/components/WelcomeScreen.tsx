@@ -117,7 +117,7 @@ const WelcomeScreen = () => {
           <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.logoContainer}>
             <View style={styles.logoBackground}>
               <Image
-                source={require('../../../shared/img/logo-cuadrado.png')}
+                source={require('../../../../shared/img/logo-cuadrado.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />

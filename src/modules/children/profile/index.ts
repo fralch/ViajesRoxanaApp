@@ -1,0 +1,1 @@
+export { default as ChildProfileScreen } from './components/ChildProfileScreen';

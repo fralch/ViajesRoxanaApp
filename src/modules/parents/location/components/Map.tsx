@@ -20,7 +20,7 @@ import { WebView } from 'react-native-webview';
 import { LinearGradient } from 'expo-linear-gradient';
 import { FontAwesome, FontAwesome5, AntDesign, Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { LocationService } from '../../../shared/services';
+import { LocationService } from '../../../../shared/services';
 
 
 // --- Design System refinado ---

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, FlatList, StatusBar, Alert } from 'react-native';
 import { FontAwesome, FontAwesome6, Feather } from '@expo/vector-icons';
-import { useAuth } from '../../../shared/hooks';
-import { formatDateRange } from '../../../shared/utils';
+import { useAuth } from '../../../../shared/hooks';
+import { formatDateRange } from '../../../../shared/utils';
 import { NotificationsScreen } from '../../notifications';
 
 // Types for API data

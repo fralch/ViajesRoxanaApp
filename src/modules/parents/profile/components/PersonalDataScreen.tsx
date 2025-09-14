@@ -11,7 +11,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
-import { useAuth } from '../../../shared/hooks';
+import { useAuth } from '../../../../shared/hooks';
 
 // ---- Interfaces ----
 interface PersonalInfo {

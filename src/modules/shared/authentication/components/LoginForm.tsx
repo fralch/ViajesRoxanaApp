@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../../../shared/hooks';
+import { useAuth } from '../../../../shared/hooks';
 
 interface LoginFormProps {
   onClose: () => void;
@@ -36,7 +36,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
         remember,
       });
       onClose();
-      navigation.navigate('MainApp' as never);
+      // Navigation happens automatically via AppNavigator when isAuthenticated becomes true
     } catch (error) {
       Alert.alert('Error', error instanceof Error ? error.message : 'Credenciales incorrectas');
     }
