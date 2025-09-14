@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
+  ScrollView,
   TouchableOpacity,
   Alert,
 } from 'react-native';
@@ -36,7 +37,11 @@ const ChildLocationScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
         <View style={styles.header}>
           <MaterialIcons name="location-on" size={40} color="#4CAF50" />
@@ -99,13 +104,13 @@ const ChildLocationScreen = ({ navigation }: any) => {
         </Card>
 
         {/* Action Button */}
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.actionButton}
           onPress={() => navigation.navigate('Games')}
         >
           <MaterialIcons name="games" size={24} color="#fff" />
           <Text style={styles.actionButtonText}>Ir a Juegos</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Error State */}
         {error && (
@@ -117,7 +122,7 @@ const ChildLocationScreen = ({ navigation }: any) => {
             <Text style={styles.errorText}>{error}</Text>
           </Card>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -127,10 +132,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 20,
+    paddingBottom: 30,
   },
   loadingContainer: {
     flex: 1,
