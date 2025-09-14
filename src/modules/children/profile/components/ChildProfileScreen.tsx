@@ -1,306 +1,607 @@
-import React from 'react';
+import React, { useMemo, useState, useEffect, ReactNode } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
   ScrollView,
   TouchableOpacity,
-} from 'react-native';
-import { AntDesign, MaterialIcons } from '@expo/vector-icons';
-import { Card, Avatar } from '../../../../shared/components';
+  Linking,
+  Platform,
+} from "react-native";
+
+import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, Feather } from "@expo/vector-icons";
 import { useAuth } from '../../../../shared/hooks';
 
-const ChildProfileScreen = ({ navigation }: any) => {
-  const { user, logout } = useAuth();
+// ---- Interfaces ----
+interface PersonalInfo {
+  fullName: string;
+  document_number: string;
+  birth_date: string;
+  age: number;
+}
 
-  const profileItems = [
-    {
-      id: 1,
-      title: 'Mi Información',
-      subtitle: 'Nombre y datos básicos',
-      icon: 'person',
-      color: '#2196F3',
-      onPress: () => {},
-    },
-    {
-      id: 2,
-      title: 'Mi Ubicación',
-      subtitle: 'Ver donde estoy ahora',
-      icon: 'location-on',
-      color: '#4CAF50',
-      onPress: () => navigation.navigate('Location'),
-    },
-    {
-      id: 3,
-      title: 'Mis Juegos',
-      subtitle: 'Diversión durante el viaje',
-      icon: 'games',
-      color: '#FF9800',
-      onPress: () => navigation.navigate('Games'),
-    },
-  ];
+interface AboutMe {
+  additional_info: string;
+}
 
-  const handleLogout = () => {
-    logout();
-  };
+interface ChipProps {
+  icon: ReactNode;
+  label: string;
+  tone?: "default" | "primary" | "muted";
+}
 
+interface ReadonlyFieldProps {
+  label: string;
+  value: string;
+  icon?: ReactNode;
+}
+
+interface SectionProps {
+  title: string | ReactNode;
+  subtitle?: string;
+  right?: ReactNode;
+  children: ReactNode;
+}
+
+interface ContactRowProps {
+  index: number;
+  phone: string;
+  onCall: (phone: string) => void;
+  onWhats: (phone: string) => void;
+}
+
+// ---- Helpers UI/UX ----
+const PRIMARY = "#e74c3c";
+const BG = "#0f0f10";
+const SURFACE = "#ffffff";
+const TEXT = "#111827";
+const SUBTEXT = "#6b7280";
+const MUTED = "#9ca3af";
+const CHIP = "#f3f4f6";
+const RADIUS = 16;
+
+const maskDocument = (doc: string = ""): string =>
+  doc.length > 4 ? `${doc.slice(0, doc.length - 4)}••••` : doc;
+
+const formatDateISO = (iso: string): string => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("es-PE", {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+  });
+};
+
+const normalizePhone = (p: string): string => p.replace(/[^\d+]/g, "");
+
+const callPhone = async (phone: string): Promise<void> => {
+  const url = `tel:${normalizePhone(phone)}`;
+  const supported = await Linking.canOpenURL(url);
+  if (supported) Linking.openURL(url);
+};
+
+const openWhatsApp = async (phone: string, text: string = "Hola 👋"): Promise<void> => {
+  const pure = normalizePhone(phone);
+  const wa = Platform.select({
+    ios: `https://wa.me/${pure}?text=${encodeURIComponent(text)}`,
+    android: `whatsapp://send?phone=${pure}&text=${encodeURIComponent(text)}`,
+    default: `https://wa.me/${pure}?text=${encodeURIComponent(text)}`,
+  });
+  const supported = await Linking.canOpenURL(wa);
+  if (supported) Linking.openURL(wa);
+};
+
+const Chip: React.FC<ChipProps> = ({ icon, label, tone = "default" }) => {
+  const palette =
+    tone === "primary"
+      ? { bg: "#fee2e2", text: "#991b1b" }
+      : tone === "muted"
+      ? { bg: "#f3f4f6", text: "#374151" }
+      : { bg: CHIP, text: "#111827" };
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <Avatar
-            size={100}
-            name={user?.name || 'Usuario'}
-            backgroundColor="#FF6B6B"
-          />
-          <Text style={styles.userName}>{user?.name || 'Pequeño Viajero'}</Text>
-          <Text style={styles.userRole}>Usuario Infantil</Text>
-        </View>
-
-        {/* Profile Info Card */}
-        <Card margin={10}>
-          <View style={styles.infoHeader}>
-            <AntDesign name="user" size={24} color="#2196F3" />
-            <Text style={styles.infoTitle}>Información Personal</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Nombre:</Text>
-            <Text style={styles.infoValue}>{user?.name || 'No disponible'}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Estado:</Text>
-            <Text style={styles.infoValue}>En viaje seguro</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Ubicación:</Text>
-            <Text style={styles.infoValue}>Compartida con padres</Text>
-          </View>
-        </Card>
-
-        {/* Quick Actions */}
-        <View style={styles.actionsSection}>
-          <Text style={styles.sectionTitle}>Acciones Rápidas</Text>
-          {profileItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.actionItem}
-              onPress={item.onPress}
-            >
-              <View style={[styles.actionIcon, { backgroundColor: item.color }]}>
-                <MaterialIcons
-                  name={item.icon as any}
-                  size={24}
-                  color="#fff"
-                />
-              </View>
-              <View style={styles.actionContent}>
-                <Text style={styles.actionTitle}>{item.title}</Text>
-                <Text style={styles.actionSubtitle}>{item.subtitle}</Text>
-              </View>
-              <AntDesign name="right" size={16} color="#666" />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Safety Information */}
-        <Card backgroundColor="#E8F5E8" margin={10}>
-          <View style={styles.safetyHeader}>
-            <AntDesign name="safety" size={20} color="#4CAF50" />
-            <Text style={styles.safetyTitle}>Información de Seguridad</Text>
-          </View>
-          <Text style={styles.safetyText}>
-            • Tu ubicación se comparte automáticamente con tus papás{'\n'}
-            • Solo personas autorizadas pueden ver tu información{'\n'}
-            • Si necesitas ayuda, avisa a un adulto de inmediato
-          </Text>
-        </Card>
-
-        {/* Fun Facts */}
-        <Card backgroundColor="#FFF8E1" margin={10}>
-          <View style={styles.funHeader}>
-            <MaterialIcons name="emoji-emotions" size={20} color="#FF9800" />
-            <Text style={styles.funTitle}>¿Sabías que...?</Text>
-          </View>
-          <Text style={styles.funText}>
-            Los viajes son más divertidos cuando todos estamos seguros y nos cuidamos mutuamente. ¡Disfruta tu aventura!
-          </Text>
-        </Card>
-
-        {/* Navigation Button */}
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Dashboard')}
-        >
-          <AntDesign name="home" size={20} color="#fff" />
-          <Text style={styles.backButtonText}>Ir al Inicio</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={[styles.chip, { backgroundColor: palette.bg }]}>
+      {icon}
+      <Text style={[styles.chipText, { color: palette.text }]}>{label}</Text>
+    </View>
   );
 };
 
+const ReadonlyField: React.FC<ReadonlyFieldProps> = ({ label, value, icon }) => (
+  <View style={styles.field}>
+    <Text style={styles.fieldLabel}>{label}</Text>
+    <View style={styles.fieldBox}>
+      {icon ? <View style={styles.fieldIcon}>{icon}</View> : null}
+      <Text style={styles.fieldValue} numberOfLines={1}>
+        {value || "-"}
+      </Text>
+    </View>
+  </View>
+);
+
+const Section: React.FC<SectionProps> = ({ title, subtitle, right, children }) => (
+  <View style={styles.section}>
+    <View style={styles.sectionHeader}>
+      <View style={{ flex: 1 }}>
+        {typeof title === 'string' ? (
+          <Text style={styles.sectionTitle}>{title}</Text>
+        ) : (
+          title
+        )}
+        {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {right}
+    </View>
+    {children}
+  </View>
+);
+
+const ContactRow: React.FC<ContactRowProps> = ({ index, phone, onCall, onWhats }) => (
+  <View style={styles.contactRow}>
+    <View style={{ flex: 1 }}>
+      <Text style={styles.inputLabel}>Contacto {index + 1}</Text>
+      <View style={styles.fieldBox}>
+        <View style={styles.fieldIcon}>
+          <Feather name="phone" size={18} color={MUTED} />
+        </View>
+        <Text style={styles.fieldValue}>{phone}</Text>
+      </View>
+    </View>
+
+    <View style={styles.actionsCol}>
+      <TouchableOpacity style={styles.quickBtn} onPress={() => onCall(phone)}>
+        <Ionicons name="call-outline" size={18} color={SURFACE} />
+      </TouchableOpacity>
+      <TouchableOpacity style={[styles.quickBtn, { backgroundColor: "#25D366" }]} onPress={() => onWhats(phone)}>
+        <Ionicons name="logo-whatsapp" size={18} color={SURFACE} />
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+interface PersonalDataScreenProps {
+  route?: {
+    params?: {
+      childData?: any; // Child data passed from dashboard
+    };
+  };
+}
+
+const ChildProfileScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  // Datos hardcodeados de ejemplo para el hijo
+  const defaultChildData = {
+    id: 1,
+    user_id: 1,
+    nombres: "Sofía Valentina García López",
+    doc_tipo: "DNI",
+    doc_numero: "87654321",
+    nums_emergencia: ["+51 987 654 321", "+51 912 345 678"],
+    fecha_nacimiento: "2015-03-15",
+    foto: null,
+    informacion_adicional: "Es muy sociable y le encanta hacer nuevos amigos. Le gusta ayudar a sus compañeros y es muy creativa. Tiene alergia leve a los mariscos.",
+    created_at: "2024-01-15T10:00:00Z",
+    updated_at: "2024-01-15T10:00:00Z",
+    inscripciones: []
+  };
+  
+  const childData = route?.params?.childData || defaultChildData;
+  
+  // Siempre mostrar perfil del hijo
+  const isChildProfile = true;
+  const displayName = childData.nombres;
+  const displayDni = childData.doc_numero;
+  const displayBirthDate = childData.fecha_nacimiento;
+  
+  const [personalInfo, setPersonalInfo] = useState<PersonalInfo>({
+    fullName: displayName,
+    document_number: displayDni,
+    birth_date: displayBirthDate,
+    age: 44, // Will be calculated from birth_date
+  });
+
+  const [emergencyContacts] = useState<string[]>(
+    childData.nums_emergencia || ["+51 987 654 321", "+51 912 345 678"]
+  );
+
+  const [aboutMe] = useState<AboutMe>({
+    additional_info: childData.informacion_adicional || "Es muy sociable y le encanta hacer nuevos amigos. Le gusta ayudar a sus compañeros y es muy creativa. Tiene alergia leve a los mariscos.",
+  });
+
+  // Actualizar información personal cuando cambie childData
+  useEffect(() => {
+    const name = childData.nombres;
+    const dni = childData.doc_numero;
+    const birthDate = childData.fecha_nacimiento;
+    
+    setPersonalInfo(prev => ({
+      ...prev,
+      fullName: name,
+      document_number: dni,
+      birth_date: birthDate
+    }));
+  }, [childData]);
+
+  // Calcular edad cuando cambie birth_date
+  const calcAge = (iso: string): number | null => {
+    if (!iso) return null;
+    const b = new Date(iso);
+    const t = new Date();
+    let age = t.getFullYear() - b.getFullYear();
+    const m = t.getMonth() - b.getMonth();
+    if (m < 0 || (m === 0 && t.getDate() < b.getDate())) age--;
+    return age;
+  };
+
+  useEffect(() => {
+    const newAge = calcAge(personalInfo.birth_date);
+    if (newAge !== null && newAge !== personalInfo.age) {
+      setPersonalInfo((p) => ({ ...p, age: newAge }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personalInfo.birth_date]);
+
+  const isMinor = useMemo(() => (personalInfo.age ?? 0) < 18, [personalInfo.age]);
+
+  return (
+    <View style={styles.container}>
+      {/* Header mejorado */}
+      <View style={[styles.header, { backgroundColor: PRIMARY }]}>
+        <View style={styles.headerTop}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>
+              {personalInfo.fullName
+                .split(" ")
+                .slice(0, 2)
+                .map((s) => s[0])
+                .join("")
+                .toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>
+              {isChildProfile ? `Perfil de ${personalInfo.fullName.split(' ')[0]}` : 'Datos Personales'}
+            </Text>
+            <Text style={styles.subtitle}>
+              {isChildProfile ? 'Información del menor' : 'Gestiona tu información personal'}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.headerChips}>
+          <Chip
+            icon={<MaterialIcons name="badge" size={16} color="#991b1b" />}
+            label={`DNI ${maskDocument(personalInfo.document_number)}`}
+            tone="primary"
+          />
+          <Chip
+            icon={<Feather name="user" size={16} color="#374151" />}
+            label={`${personalInfo.age ?? "-"} años`}
+            tone={isMinor ? "primary" : "default"}
+          />
+          {user && (
+            <Chip
+              icon={<Feather name={user.is_active ? "check-circle" : "x-circle"} size={16} color={user.is_active ? "#059669" : "#dc2626"} />}
+              label={user.is_active ? "Activo" : "Inactivo"}
+              tone={user.is_active ? "default" : "primary"}
+            />
+          )}
+        </View>
+      </View>
+
+      {/* Contenido */}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
+        {/* Información Personal */}
+        <Section
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome name="user" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>
+                {isChildProfile ? 'Información del Menor' : 'Información Personal'}
+              </Text>
+            </View>
+          )}
+          subtitle={isChildProfile ? "Datos del hijo/a" : "Datos de identificación"}
+          right={
+            <View style={styles.badgeRight}>
+              <Text style={styles.badgeRightText}>{isMinor ? "Menor de edad" : "Mayor de edad"}</Text>
+            </View>
+          }
+        >
+          <ReadonlyField
+            label="Nombre Completo"
+            value={personalInfo.fullName}
+            icon={<Feather name="user" size={18} color={MUTED} />}
+          />
+
+          {!isChildProfile && (
+            <>
+              <ReadonlyField
+                label="Tipo de Usuario"
+                value={user?.is_admin ? "Administrador" : "Usuario"}
+                icon={<Feather name="shield" size={18} color={MUTED} />}
+              />
+
+              {user?.created_at && (
+                <ReadonlyField
+                  label="Fecha de Registro"
+                  value={new Date(user.created_at).toLocaleDateString('es-ES')}
+                  icon={<Feather name="calendar" size={18} color={MUTED} />}
+                />
+              )}
+            </>
+          )}
+
+          {isChildProfile && childData && (
+            <ReadonlyField
+              label="Tipo de Documento"
+              value={childData.doc_tipo || "DNI"}
+              icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
+            />
+          )}
+
+          {!isChildProfile && (
+            <View style={styles.row}>
+              <View style={[styles.col, { marginRight: 8 }]}>
+                <ReadonlyField
+                  label="Tipo de Documento"
+                  value="DNI"
+                  icon={<MaterialIcons name="badge" size={18} color={MUTED} />}
+                />
+              </View>
+              <View style={[styles.col, { marginLeft: 8 }]}>
+                <ReadonlyField
+                  label="Número de Documento"
+                  value={maskDocument(personalInfo.document_number)}
+                  icon={<Feather name="hash" size={18} color={MUTED} />}
+                />
+              </View>
+            </View>
+          )}
+
+          {isChildProfile && (
+            <ReadonlyField
+              label="Número de Documento"
+              value={personalInfo.document_number}
+              icon={<Feather name="hash" size={18} color={MUTED} />}
+            />
+          )}
+
+          <View style={styles.row}>
+            <View style={[styles.col, { marginRight: 8 }]}>
+              <ReadonlyField
+                label="Fecha de Nacimiento"
+                value={new Date(personalInfo.birth_date).toLocaleDateString('es-PE', {
+                  day: '2-digit',
+                  month: '2-digit', 
+                  year: 'numeric'
+                })}
+                icon={<Feather name="calendar" size={18} color={MUTED} />}
+              />
+            </View>
+            <View style={[styles.col, { marginLeft: 8 }]}>
+              <ReadonlyField
+                label="Edad"
+                value={`${personalInfo.age ?? "-"} años`}
+                icon={<Feather name="hash" size={18} color={MUTED} />}
+              />
+            </View>
+          </View>
+        </Section>
+
+        {/* Contactos de Emergencia */}
+        <Section 
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome name="phone-square" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>Contactos de Emergencia</Text>
+            </View>
+          )} 
+          subtitle="Máximo 3 números telefónicos">
+          {emergencyContacts.map((c, i) => (
+            <ContactRow
+              key={i}
+              index={i}
+              phone={c}
+              onCall={callPhone}
+              onWhats={openWhatsApp}
+            />
+          ))}
+         
+        </Section>
+
+        {/* Acerca de mí / Información adicional */}
+        <Section 
+          title={(
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <FontAwesome6 name="circle-info" size={18} color="#d62e29" />
+              <Text style={styles.sectionTitle}>
+                {isChildProfile ? 'Información Adicional' : 'Acerca de mí'}
+              </Text>
+            </View>
+          )} 
+          subtitle={isChildProfile ? "Detalles y observaciones del menor" : "Información adicional y observaciones"}>
+          <View style={styles.noteBox}>
+            <Feather name="info" size={18} color={PRIMARY} />
+            <Text style={styles.noteText}>{aboutMe.additional_info}</Text>
+          </View>
+
+          {/* Mostrar información adicional específica del hijo */}
+          {isChildProfile && childData && (
+            <>
+             
+            </>
+          )}
+        </Section>
+      
+      </ScrollView>
+    </View>
+  );
+};
+
+// ---- Estilos ----
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  profileHeader: {
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 30,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 15,
-  },
-  userRole: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 5,
-  },
-  infoCard: {
-    marginBottom: 25,
-  },
-  infoHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 10,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-  },
-  actionsSection: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
-  },
-  actionItem: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  container: { flex: 1, backgroundColor: "#f6f7f8" },
+
+  header: {
+    paddingTop: 20,
+    paddingBottom: 16,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
     elevation: 3,
   },
-  actionIcon: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    justifyContent: 'center',
-    alignItems: 'center',
+  headerTop: { flexDirection: "row", alignItems: "center", gap: 12 },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 999,
+    backgroundColor: SURFACE,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  actionContent: {
-    flex: 1,
-    marginLeft: 15,
+  avatarText: { fontWeight: "800", color: PRIMARY },
+  title: { fontSize: 20, fontWeight: "800", color: SURFACE },
+  subtitle: { fontSize: 13, color: "#ffe4e6", marginTop: 2 },
+  editBtn: {
+    backgroundColor: SURFACE,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 999,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
-  actionTitle: {
+  editBtnText: { color: PRIMARY, fontWeight: "700" },
+
+  headerChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12,
+  },
+
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  chipText: { fontSize: 12, fontWeight: "700" },
+
+  scrollContainer: { flex: 1 },
+
+  section: {
+    backgroundColor: SURFACE,
+    borderRadius: RADIUS,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sectionHeader: { flexDirection: "row", alignItems: "flex-start", marginBottom: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: "800", color: TEXT },
+  sectionSubtitle: { fontSize: 13, color: SUBTEXT, marginTop: 4 },
+  badgeRight: {
+    backgroundColor: "#ecfccb",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+  },
+  badgeRightText: { color: "#3f6212", fontWeight: "700", fontSize: 12 },
+
+  row: { flexDirection: "row" },
+  col: { flex: 1 },
+
+  field: { marginBottom: 12 },
+  fieldLabel: { fontSize: 12, color: SUBTEXT, marginBottom: 6, fontWeight: "700" },
+  fieldBox: {
+    backgroundColor: "#f8fafc",
+    borderWidth: 1,
+    borderColor: "#eef2f7",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  fieldIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#eef2f7",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 8,
+  },
+  fieldValue: { fontSize: 15, color: TEXT, flex: 1 },
+
+  inputLabel: { fontSize: 12, color: SUBTEXT, marginBottom: 6, fontWeight: "700" },
+
+  // Contactos
+  contactRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 12,
+    marginBottom: 12,
+  },
+  actionsCol: { flexDirection: "row", gap: 8 },
+  quickBtn: {
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  addBtn: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 6,
+    marginTop: 4,
+  },
+  addBtnDisabled: {
+    backgroundColor: "#e5e7eb",
+  },
+  addBtnText: { color: SURFACE, fontWeight: "800" },
+
+  // Nota / About me
+  noteBox: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+    backgroundColor: "#fff7ed",
+    borderWidth: 1,
+    borderColor: "#ffedd5",
+    borderRadius: 12,
+    padding: 12,
+  },
+  noteText: { color: "#7c2d12", flex: 1, lineHeight: 20, fontSize: 14 },
+  editButton: {
+    backgroundColor: PRIMARY,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 16,
+  },
+  editButtonText: {
+    color: SURFACE,
+    fontWeight: "800",
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  actionSubtitle: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  safetyCard: {
-    marginBottom: 20,
-    backgroundColor: '#E8F5E8',
-    borderLeftWidth: 4,
-    borderLeftColor: '#4CAF50',
-  },
-  safetyHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  safetyTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2E7D32',
-    marginLeft: 8,
-  },
-  safetyText: {
-    fontSize: 14,
-    color: '#388E3C',
-    lineHeight: 18,
-  },
-  funCard: {
-    marginBottom: 25,
-    backgroundColor: '#FFF8E1',
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF9800',
-  },
-  funHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  funTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#F57C00',
-    marginLeft: 8,
-  },
-  funText: {
-    fontSize: 14,
-    color: '#BF360C',
-    lineHeight: 18,
-  },
-  backButton: {
-    backgroundColor: '#d62d28',
-    borderRadius: 25,
-    paddingVertical: 15,
-    paddingHorizontal: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 30,
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 10,
   },
 });
 

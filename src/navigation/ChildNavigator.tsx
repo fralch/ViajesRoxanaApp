@@ -87,7 +87,7 @@ function ChildTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profile"
+        name="ChildProfile"
         component={ChildProfileScreen}
         options={({ navigation }) => ({
           title: 'Perfil',
