@@ -13,7 +13,8 @@ import {
 import { FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
-import ModalAccess from './ModalAccess';
+import ParentLoginModal from './ParentLoginModal';
+import ChildLoginModal from './ChildLoginModal';
 
 const { height } = Dimensions.get('window');
 
@@ -68,17 +69,15 @@ const RADIUS = {
 
 const WelcomeScreen = () => {
   const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [modalTab, setModalTab] = useState<'login' | 'register'>('login');
+  const [parentModalVisible, setParentModalVisible] = useState(false);
+  const [childModalVisible, setChildModalVisible] = useState(false);
 
   const handleParentLogin = () => {
-    setModalTab('login');
-    setModalVisible(true);
+    setParentModalVisible(true);
   };
 
   const handleChildLogin = () => {
-    setModalTab('login');
-    setModalVisible(true);
+    setChildModalVisible(true);
   };
 
   return (
@@ -191,10 +190,14 @@ const WelcomeScreen = () => {
         </Animated.View>
       </View>
 
-      <ModalAccess 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
-        initialTab={modalTab} 
+      <ParentLoginModal
+        visible={parentModalVisible}
+        onClose={() => setParentModalVisible(false)}
+      />
+
+      <ChildLoginModal
+        visible={childModalVisible}
+        onClose={() => setChildModalVisible(false)}
       />
     </SafeAreaView>
   );
