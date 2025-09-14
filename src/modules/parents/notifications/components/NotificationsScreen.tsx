@@ -10,7 +10,7 @@ const getNotificationColor = (type: string) => {
   // Simplified logic, as the API response doesn't have a type
   // We can enhance this later if needed
   if (type.includes('bus')) return '#4CAF50';
-  if (type.includes('camino')) return '#FF9800';
+  if (type.includes('camino')) return '#e74c3c';
   return '#757575';
 };
 

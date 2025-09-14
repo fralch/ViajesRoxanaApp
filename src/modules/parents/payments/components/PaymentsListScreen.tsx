@@ -71,7 +71,7 @@ const PaymentsListScreen = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return '#4CAF50';
-      case 'partial': return '#FF9800';
+      case 'partial': return '#e74c3c';
       case 'pending': return '#f44336';
       default: return '#757575';
     }

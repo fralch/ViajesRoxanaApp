@@ -37,7 +37,7 @@ const GamesScreen = ({ navigation }: any) => {
       title: 'Adivina el Animal',
       subtitle: 'Juego de adivinanzas',
       icon: 'pets',
-      color: '#FF9800',
+      color: '#e74c3c',
       description: 'Piensa en un animal y que otros adivinen cuál es con pistas.',
     },
     {
@@ -88,7 +88,7 @@ const GamesScreen = ({ navigation }: any) => {
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
         {/* Header */}
         <View style={styles.header}>
-          <MaterialIcons name="games" size={40} color="#FF9800" />
+          <MaterialIcons name="games" size={40} color="#e74c3c" />
           <Text style={styles.title}>Juegos de Viaje</Text>
           <Text style={styles.subtitle}>
             ¡Diviértete mientras viajas de forma segura!

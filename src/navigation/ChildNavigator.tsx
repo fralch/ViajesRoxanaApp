@@ -39,14 +39,14 @@ function ChildTabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#FF9800',
+        tabBarActiveTintColor: '#e74c3c',
         tabBarInactiveTintColor: '#666',
         tabBarStyle: {
           display: 'flex',
           backgroundColor: '#fff',
         },
         headerStyle: {
-          backgroundColor: '#FF9800',
+          backgroundColor: '#e74c3c',
         },
         headerTintColor: '#fff',
         headerTitleStyle: {

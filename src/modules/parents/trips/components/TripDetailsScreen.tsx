@@ -221,7 +221,7 @@ const TripDetailsScreen = () => {
               <Text style={styles.documentName}>{doc.name}</Text>
               <Text style={[
                 styles.documentStatus,
-                { color: doc.available ? '#4CAF50' : '#FF9800' }
+                { color: doc.available ? '#4CAF50' : '#e74c3c' }
               ]}>
                 {doc.available ? '✅ Disponible' : '⏳ Disponible durante el viaje'}
               </Text>

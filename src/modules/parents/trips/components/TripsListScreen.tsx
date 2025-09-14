@@ -76,7 +76,7 @@ const TripsListScreen = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return '#4CAF50';
-      case 'upcoming': return '#FF9800';
+      case 'upcoming': return '#e74c3c';
       case 'completed': return '#757575';
       default: return '#757575';
     }

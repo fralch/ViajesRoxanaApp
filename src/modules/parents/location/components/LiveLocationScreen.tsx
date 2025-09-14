@@ -44,7 +44,7 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'safe': return '#4CAF50';
-      case 'warning': return '#FF9800';
+      case 'warning': return '#e74c3c';
       case 'emergency': return '#f44336';
       default: return '#757575';
     }

@@ -88,7 +88,7 @@ const ChildLocationScreen = ({ navigation }: any) => {
         {/* Safety Info */}
         <Card backgroundColor="#FFF8E1" margin={10}>
           <View style={styles.safetyHeader}>
-            <AntDesign name="safety" size={24} color="#FF9800" />
+            <AntDesign name="safety" size={24} color="#e74c3c" />
             <Text style={styles.safetyTitle}>Información de Seguridad</Text>
           </View>
           <Text style={styles.safetyText}>
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   actionButton: {
-    backgroundColor: '#FF9800',
+    backgroundColor: '#e74c3c',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 30,
