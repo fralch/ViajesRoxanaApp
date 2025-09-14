@@ -1,9 +1,9 @@
 import React from 'react';
 import { Text, Image, View, TouchableOpacity } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; // COMENTADO PARA USO FUTURO
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {AntDesign, MaterialIcons} from '@expo/vector-icons';
+// import {AntDesign, MaterialIcons} from '@expo/vector-icons'; // COMENTADO PARA USO FUTURO
 
 // Import child screens
 import ChildDashboardScreen from '../modules/children/dashboard/components/ChildDashboardScreen';
@@ -11,7 +11,7 @@ import ChildLocationScreen from '../modules/children/location/components/ChildLo
 import ChildProfileScreen from '../modules/children/profile/components/ChildProfileScreen';
 import GamesScreen from '../modules/children/games/components/GamesScreen';
 
-const Tab = createBottomTabNavigator();
+// const Tab = createBottomTabNavigator(); // COMENTADO PARA USO FUTURO
 const Stack = createStackNavigator();
 
 // Header Logo Component - CENTRADO
@@ -31,6 +31,11 @@ function HeaderLogo() {
     </View>
   );
 }
+
+/* 
+// ========================================
+// HORIZONTAL NAV BAR (TAB NAVIGATOR) - COMENTADO PARA USO FUTURO
+// ========================================
 
 // Main Tab Navigator for Children
 function ChildTabNavigator() {
@@ -108,11 +113,47 @@ function ChildTabNavigator() {
   );
 }
 
-// Stack Navigator for Child App
+// ======================================== 
+*/
+
+// Stack Navigator for Child App (VERSIÓN SIN TAB NAVIGATOR)
 function ChildStackNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ChildTabs" component={ChildTabNavigator} />
+    <Stack.Navigator 
+      initialRouteName="Dashboard"
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#e74c3c',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerTitle: () => <HeaderLogo />,
+        headerTitleAlign: 'center',
+      }}
+    >
+      {/* Pantallas principales que estaban en el Tab Navigator */}
+      <Stack.Screen 
+        name="Dashboard" 
+        component={ChildDashboardScreen}
+        options={{ title: 'Inicio' }}
+      />
+      <Stack.Screen 
+        name="Location" 
+        component={ChildLocationScreen}
+        options={{ title: 'Ubicación' }}
+      />
+      <Stack.Screen 
+        name="Games" 
+        component={GamesScreen}
+        options={{ title: 'Juegos' }}
+      />
+      <Stack.Screen 
+        name="ChildProfile" 
+        component={ChildProfileScreen}
+        options={{ title: 'Perfil' }}
+      />
     </Stack.Navigator>
   );
 }
