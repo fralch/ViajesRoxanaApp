@@ -11,6 +11,7 @@ import {
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { Card, LoadingSpinner } from '../../../../shared/components';
 import { useLocation } from '../../../../shared/hooks';
+import { Map } from './Map';
 
 const ChildLocationScreen = ({ navigation }: any) => {
   const [isSharing, setIsSharing] = useState(true);
@@ -62,32 +63,16 @@ const ChildLocationScreen = ({ navigation }: any) => {
           </Text>
         </Card>
 
-        {/* Location Info */}
+        {/* Location Map */}
         {location && (
-          <Card margin={10}>
-            <View style={styles.locationHeader}>
-              <AntDesign name="environment" size={24} color="#2196F3" />
-              <Text style={styles.locationTitle}>Información de Ubicación</Text>
-            </View>
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>Latitud:</Text>
-              <Text style={styles.locationValue}>
-                {location.coords.latitude.toFixed(6)}
-              </Text>
-            </View>
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>Longitud:</Text>
-              <Text style={styles.locationValue}>
-                {location.coords.longitude.toFixed(6)}
-              </Text>
-            </View>
-            <View style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>Precisión:</Text>
-              <Text style={styles.locationValue}>
-                {location.coords.accuracy ? Math.round(location.coords.accuracy) : 'N/A'} metros
-              </Text>
-            </View>
-          </Card>
+          <View style={styles.mapContainer}>
+            <Map
+              latitude={location.coords.latitude}
+              longitude={location.coords.longitude}
+              studentName="Mi ubicación"
+              address="Ubicación actual"
+            />
+          </View>
         )}
 
         {/* Safety Info */}
@@ -203,6 +188,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginLeft: 10,
+  },
+  mapContainer: {
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginHorizontal: 10,
+    marginVertical: 20,
   },
   locationInfo: {
     flexDirection: 'row',
