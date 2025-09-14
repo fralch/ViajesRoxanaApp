@@ -1,9 +1,9 @@
 import React from 'react';
 import { Text, Image, View, TouchableOpacity } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+// import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; // COMENTADO PARA USO FUTURO
 import { createStackNavigator } from '@react-navigation/stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {AntDesign, SimpleLineIcons} from '@expo/vector-icons';
+// import {AntDesign, SimpleLineIcons} from '@expo/vector-icons'; // COMENTADO PARA USO FUTURO
 
 // Import parent screens
 import DashboardScreen from '../modules/parents/dashboard/components/DashboardScreen';
@@ -14,7 +14,7 @@ import LiveLocationScreen from '../modules/parents/location/components/LiveLocat
 import MapScreen from '../modules/parents/location/components/MapScreen';
 import NotificationDetailsScreen from '../modules/parents/notifications/components/NotificationDetailsScreen';
 
-const Tab = createBottomTabNavigator();
+// const Tab = createBottomTabNavigator(); // COMENTADO PARA USO FUTURO
 const Stack = createStackNavigator();
 
 // Header Logo Component - CENTRADO
@@ -34,6 +34,11 @@ function HeaderLogo() {
     </View>
   );
 }
+
+/* 
+// ========================================
+// HORIZONTAL NAV BAR (TAB NAVIGATOR) - COMENTADO PARA USO FUTURO
+// ========================================
 
 // Main Tab Navigator for Parents
 function ParentTabNavigator() {
@@ -120,31 +125,66 @@ function ParentTabNavigator() {
   );
 }
 
-// Stack Navigator for Parent App
+// ======================================== 
+*/
+
+// Stack Navigator for Parent App (VERSIÓN SIN TAB NAVIGATOR)
 function ParentStackNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ParentTabs" component={ParentTabNavigator} />
+    <Stack.Navigator 
+      initialRouteName="Dashboard"
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#d62d28',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerTitle: () => <HeaderLogo />,
+        headerTitleAlign: 'center',
+      }}
+    >
+      {/* Pantallas principales que estaban en el Tab Navigator */}
+      <Stack.Screen 
+        name="Dashboard" 
+        component={DashboardScreen}
+        options={{ title: 'Inicio' }}
+      />
+      <Stack.Screen 
+        name="Trips" 
+        component={TripsListScreen}
+        options={{ title: 'Viajes' }}
+      />
+      <Stack.Screen 
+        name="Location" 
+        component={LiveLocationScreen}
+        options={{ title: 'Ubicación' }}
+      />
+      <Stack.Screen 
+        name="Payments" 
+        component={PaymentsListScreen}
+        options={{ title: 'Pagos' }}
+      />
+      <Stack.Screen 
+        name="Profile" 
+        component={PersonalDataScreen}
+        options={{ title: 'Perfil' }}
+      />
+      
+      {/* Pantallas adicionales */}
       <Stack.Screen
         name="MapScreen"
         component={MapScreen}
         options={{
-          headerShown: true,
-          headerStyle: { backgroundColor: '#d62d28' },
-          headerTintColor: '#fff',
           headerTitle: 'Mapa de Ubicación',
-          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
       <Stack.Screen
         name="NotificationDetails"
         component={NotificationDetailsScreen}
         options={{
-          headerShown: true,
-          headerStyle: { backgroundColor: '#d62d28' },
-          headerTintColor: '#fff',
           headerTitle: 'Notificaciones',
-          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
     </Stack.Navigator>
