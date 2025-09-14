@@ -13,9 +13,10 @@ import { useAuth } from '../../../../shared/hooks';
 
 interface LoginFormProps {
   onClose: () => void;
+  userType?: 'parent' | 'child'; // Nuevo prop para especificar el tipo de usuario
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onClose, userType = 'parent' }) => {
   const navigation = useNavigation();
   const { login, isLoading } = useAuth();
   const [email, setEmail] = useState('');
@@ -34,6 +35,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
         emailPhone: email,
         password,
         remember,
+        userType, // Pasar el tipo de usuario al login
       });
       onClose();
       // Navigation happens automatically via AppNavigator when isAuthenticated becomes true
@@ -48,19 +50,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose }) => {
 
   return (
     <View style={styles.section}>
-      {/* Email */}
-      <Text style={styles.label}>Correo electrónico</Text>
+      {/* Email/DNI */}
+      <Text style={styles.label}>
+        {userType === 'child' ? 'DNI' : 'Correo electrónico'}
+      </Text>
       <View style={styles.inputWrap}>
-        <Ionicons name="mail-outline" size={20} color="#6B7280" style={styles.leftIcon} />
+        <Ionicons
+          name={userType === 'child' ? 'card-outline' : 'mail-outline'}
+          size={20}
+          color="#6B7280"
+          style={styles.leftIcon}
+        />
         <TextInput
           style={styles.input}
-          placeholder="admin@viajesroxana.com"
+          placeholder={userType === 'child' ? '12345678' : 'admin@viajesroxana.com'}
           placeholderTextColor="#9CA3AF"
           value={email}
           onChangeText={setEmail}
-          keyboardType="email-address"
+          keyboardType={userType === 'child' ? 'numeric' : 'email-address'}
           autoCapitalize="none"
-          autoComplete="email"
+          autoComplete={userType === 'child' ? 'off' : 'email'}
         />
       </View>
 

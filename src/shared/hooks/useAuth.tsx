@@ -24,6 +24,7 @@ export interface AuthLoginCredentials {
   emailPhone: string;
   password: string;
   remember?: boolean;
+  userType?: 'parent' | 'child';
 }
 
 // Constantes para las keys del storage
@@ -111,7 +112,8 @@ const useAuthInternal = () => {
       // Validar credenciales antes de enviar
       const loginRequest: LoginRequest = {
         email: credentials.emailPhone,
-        password: credentials.password
+        password: credentials.password,
+        user_type: credentials.userType || 'parent'
       };
       
       const validation = AuthService.validateCredentials(loginRequest);
@@ -122,13 +124,22 @@ const useAuthInternal = () => {
       // Llamada real al API
       const apiResponse = await AuthService.login(loginRequest);
       
+      // Determinar el rol basado en el tipo de usuario enviado
+      let userRole: 'student' | 'guardian' | 'admin' = 'guardian';
+
+      if (credentials.userType === 'child') {
+        userRole = 'student';
+      } else if (apiResponse.user.is_admin) {
+        userRole = 'admin';
+      }
+
       // Mapear la respuesta del API a nuestro formato interno
       const userData: AuthUserData = {
         id: apiResponse.user.id.toString(),
         email: apiResponse.user.email,
         phone: apiResponse.user.phone,
         dni: apiResponse.user.dni,
-        role: apiResponse.user.is_admin ? 'admin' : 'guardian',
+        role: userRole,
         name: apiResponse.user.name,
         lastname: '', // El API no devuelve lastname separado
         is_active: true,

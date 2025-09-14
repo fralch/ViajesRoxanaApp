@@ -32,7 +32,8 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
       await login({
         emailPhone: email,
         password: password,
-        remember: rememberMe
+        remember: rememberMe,
+        userType: 'child' // Especificar que es login de hijo
       });
       onClose();
     } catch (error) {
@@ -73,17 +74,18 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
               {/* Fun Login Form */}
               <View style={styles.formContainer}>
                 <Animated.View entering={FadeIn.delay(600)} style={styles.inputContainer}>
-                  <Text style={styles.inputLabel}>Tu email</Text>
+                  <Text style={styles.inputLabel}>Tu DNI</Text>
                   <View style={styles.inputWrapper}>
-                    <MaterialIcons name="email" size={20} color={COLORS.primary} style={styles.inputIcon} />
+                    <MaterialIcons name="badge" size={20} color={COLORS.primary} style={styles.inputIcon} />
                     <TextInput
                       style={styles.input}
-                      placeholder="ejemplo@email.com"
+                      placeholder="12345678"
                       value={email}
                       onChangeText={setEmail}
-                      keyboardType="email-address"
+                      keyboardType="numeric"
                       autoCapitalize="none"
                       placeholderTextColor={COLORS.placeholder}
+                      maxLength={8}
                     />
                   </View>
                 </Animated.View>

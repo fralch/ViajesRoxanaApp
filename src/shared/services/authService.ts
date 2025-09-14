@@ -15,6 +15,9 @@ export interface LoginApiResponse {
     created_at: string;
     updated_at: string;
     hijos: any[];
+    // Campos adicionales para identificar si es un hijo
+    is_child?: boolean;
+    parent_id?: number;
   };
   token: string;
 }
@@ -22,6 +25,7 @@ export interface LoginApiResponse {
 export interface LoginRequest {
   email: string;
   password: string;
+  user_type?: 'parent' | 'child'; // Nuevo parámetro para especificar el tipo de usuario
 }
 
 // Configuración del API
@@ -81,15 +85,15 @@ export class AuthService {
     const errors: string[] = [];
 
     if (!credentials.email || credentials.email.trim() === '') {
-      errors.push('El email es requerido');
-    } else if (!this.validateEmail(credentials.email)) {
+      errors.push(credentials.user_type === 'child' ? 'El DNI es requerido' : 'El email es requerido');
+    } else if (credentials.user_type === 'parent' && !this.validateEmail(credentials.email)) {
       errors.push('El formato del email no es válido');
     }
 
     if (!credentials.password || credentials.password.trim() === '') {
       errors.push('La contraseña es requerida');
-    } else if (credentials.password.length < 6) {
-      errors.push('La contraseña debe tener al menos 6 caracteres');
+    } else if (credentials.password.length < 4) {
+      errors.push('La contraseña debe tener al menos 4 caracteres');
     }
 
     return {

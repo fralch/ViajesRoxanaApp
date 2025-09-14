@@ -41,7 +41,7 @@ const ParentLoginModal: React.FC<ParentLoginModalProps> = ({ visible, onClose })
               </Text>
 
               {/* Content */}
-              <LoginForm onClose={onClose} />
+              <LoginForm onClose={onClose} userType="parent" />
             </View>
           </KeyboardAvoidingView>
         </View>
