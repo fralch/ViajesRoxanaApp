@@ -41,14 +41,13 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
   };
 
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType="slide" transparent={false} visible={visible} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalOverlay}>
-          <KeyboardAvoidingView
-            style={styles.modalContainer}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          >
-            <Animated.View entering={BounceIn.delay(200)} style={styles.modalContent}>
+        <KeyboardAvoidingView
+          style={styles.modalContainer}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <Animated.View entering={BounceIn.delay(200)} style={styles.modalContent}>
               {/* Fun Header with decorative elements */}
               <View style={styles.header}>
                 <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
@@ -149,9 +148,8 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
                   </TouchableOpacity>
                 </Animated.View>
               </View>
-            </Animated.View>
-          </KeyboardAvoidingView>
-        </View>
+          </Animated.View>
+        </KeyboardAvoidingView>
       </TouchableWithoutFeedback>
     </Modal>
   );
@@ -173,32 +171,19 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: COLORS.overlayBg,
-    justifyContent: 'flex-end',
-  },
   modalContainer: {
+    flex: 1,
     width: '100%',
   },
   modalContent: {
+    flex: 1,
     backgroundColor: COLORS.cardBg,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    minHeight: '75%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 20,
   },
 
   // Header styles
   header: {
     backgroundColor: COLORS.primary,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    paddingTop: 20,
+    paddingTop: 50,
     paddingBottom: 40,
     paddingHorizontal: 24,
     position: 'relative',
@@ -206,7 +191,7 @@ const styles = StyleSheet.create({
   },
   closeBtn: {
     position: 'absolute',
-    top: 20,
+    top: 50,
     right: 20,
     width: 32,
     height: 32,
