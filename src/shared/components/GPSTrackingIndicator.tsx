@@ -21,6 +21,7 @@ const GPSTrackingIndicator: React.FC<GPSTrackingIndicatorProps> = ({
     lastUpdate,
     error,
     isChildUser,
+    forceStartTrackingWithMockData,
   } = useGPSTracking();
 
   if (!isChildUser) {
@@ -108,6 +109,19 @@ const GPSTrackingIndicator: React.FC<GPSTrackingIndicatorProps> = ({
           )}
         </View>
       )}
+
+      {/* Debug Button - Development Only */}
+      {showDetails && (
+        <TouchableOpacity
+          style={styles.debugButton}
+          onPress={() => {
+            console.log('🧪 Debug button pressed - forcing GPS start');
+            forceStartTrackingWithMockData();
+          }}
+        >
+          <Text style={styles.debugButtonText}>🧪 Force Start GPS (Debug)</Text>
+        </TouchableOpacity>
+      )}
     </Component>
   );
 };
@@ -168,6 +182,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#e74c3c',
     marginTop: 4,
+  },
+  debugButton: {
+    marginTop: 8,
+    backgroundColor: '#8e44ad',
+    borderRadius: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 

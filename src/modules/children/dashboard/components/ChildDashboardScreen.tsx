@@ -187,6 +187,23 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     <>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* Debug User Info */}
+        <View style={{
+          backgroundColor: '#f0f0f0',
+          margin: 10,
+          padding: 10,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: '#ddd'
+        }}>
+          <Text style={{ fontSize: 12, fontWeight: 'bold', marginBottom: 5 }}>DEBUG USER INFO:</Text>
+          <Text style={{ fontSize: 10 }}>ID: {user?.id || 'No ID'}</Text>
+          <Text style={{ fontSize: 10 }}>Role: {user?.role || 'No Role'}</Text>
+          <Text style={{ fontSize: 10 }}>Name: {user?.name || 'No Name'}</Text>
+          <Text style={{ fontSize: 10 }}>Token: {user?.token ? 'Present' : 'Missing'}</Text>
+          <Text style={{ fontSize: 10 }}>isAuthenticated: {String(!!user)}</Text>
+        </View>
+
         {/* GPS Tracking Indicator */}
         <GPSTrackingIndicator showDetails={true} />
 

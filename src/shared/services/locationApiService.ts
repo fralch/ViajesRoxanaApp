@@ -87,6 +87,24 @@ class LocationApiService {
         },
       };
 
+      // Since API is not connected yet, log the coordinates that would be sent
+      console.log('🌍 GPS Coordinates to send to API:', {
+        userId: payload.user_id,
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        accuracy: payload.accuracy ? `±${Math.round(payload.accuracy)}m` : 'N/A',
+        altitude: payload.altitude ? `${Math.round(payload.altitude)}m` : 'N/A',
+        speed: payload.speed ? `${Math.round(payload.speed * 3.6)} km/h` : '0 km/h',
+        timestamp: new Date(payload.timestamp).toLocaleString(),
+        deviceInfo: payload.device_info,
+      });
+
+      // Simulate successful API response for now
+      console.log('✅ Location would be sent successfully to API');
+      return true;
+
+      // TODO: Uncomment when API is ready
+      /*
       const response = await this.client.post<ApiResponse<any>>(
         LOCATION_ENDPOINT,
         payload
@@ -99,8 +117,9 @@ class LocationApiService {
         console.error('Unexpected response status:', response.status);
         return false;
       }
+      */
     } catch (error) {
-      console.error('Error sending location:', error);
+      console.error('Error processing location:', error);
       return false;
     }
   }
@@ -121,6 +140,24 @@ class LocationApiService {
         },
       }));
 
+      // Since API is not connected yet, log the batch coordinates that would be sent
+      console.log(`📦 GPS Batch (${locations.length} locations) to send to API:`);
+      payloads.forEach((payload, index) => {
+        console.log(`  [${index + 1}/${payloads.length}]`, {
+          userId: payload.user_id,
+          latitude: payload.latitude,
+          longitude: payload.longitude,
+          accuracy: payload.accuracy ? `±${Math.round(payload.accuracy)}m` : 'N/A',
+          timestamp: new Date(payload.timestamp).toLocaleString(),
+        });
+      });
+
+      // Simulate successful API response for now
+      console.log(`✅ Batch of ${locations.length} locations would be sent successfully to API`);
+      return { success: true, failedCount: 0 };
+
+      // TODO: Uncomment when API is ready
+      /*
       const response = await this.client.post<ApiResponse<any>>(
         `${LOCATION_ENDPOINT}/batch`,
         { locations: payloads }
@@ -133,16 +170,25 @@ class LocationApiService {
         console.error('Unexpected response status for batch:', response.status);
         return { success: false, failedCount: locations.length };
       }
+      */
     } catch (error) {
-      console.error('Error sending location batch:', error);
+      console.error('Error processing location batch:', error);
       return { success: false, failedCount: locations.length };
     }
   }
 
   async testConnection(): Promise<boolean> {
     try {
+      // Since API is not connected yet, simulate successful connection for now
+      console.log('🔧 Testing API connection... (simulated)');
+      console.log('✅ API connection test passed (simulated)');
+      return true;
+
+      // TODO: Uncomment when API is ready
+      /*
       const response = await this.client.get('/api/v1/health');
       return response.status === 200;
+      */
     } catch (error) {
       console.error('API connection test failed:', error);
       return false;

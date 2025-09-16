@@ -31,20 +31,34 @@ class GPSTrackingService {
 
   async initializeTracking(userId: string): Promise<boolean> {
     try {
+      console.log('🔧 GPS Service - initializeTracking called with userId:', userId);
+
+      if (!userId) {
+        console.error('🚫 GPS Service - No userId provided to initializeTracking');
+        return false;
+      }
+
       this.userId = userId;
+      console.log('✅ GPS Service - userId set to:', this.userId);
 
       // Request permissions
+      console.log('📱 GPS Service - Requesting foreground permissions...');
       const { status: foregroundStatus } = await Location.requestForegroundPermissionsAsync();
+      console.log('📱 Foreground permission status:', foregroundStatus);
+
       if (foregroundStatus !== 'granted') {
-        console.error('Foreground location permission not granted');
+        console.error('🚫 Foreground location permission not granted');
         return false;
       }
 
       // Request background permissions for iOS and Android
       if (Platform.OS === 'android') {
+        console.log('🤖 GPS Service - Requesting background permissions for Android...');
         const { status: backgroundStatus } = await Location.requestBackgroundPermissionsAsync();
+        console.log('🤖 Background permission status:', backgroundStatus);
+
         if (backgroundStatus !== 'granted') {
-          console.error('Background location permission not granted');
+          console.error('🚫 Background location permission not granted');
           return false;
         }
       }
@@ -73,7 +87,9 @@ class GPSTrackingService {
       // Start queue processing
       this.startQueueProcessing();
 
-      console.log('GPS tracking started successfully');
+      console.log('🚀 GPS tracking started successfully');
+      console.log('📡 Background location updates every 15 seconds or 10 meters');
+      console.log('🔧 Queue processing every 30 seconds');
       return true;
     } catch (error) {
       console.error('Error initializing GPS tracking:', error);
@@ -104,14 +120,16 @@ class GPSTrackingService {
       const { locations, error } = body.data;
 
       if (error) {
-        console.error('Location update error:', error);
+        console.error('🚫 Background location update error:', error);
         return;
       }
 
       if (!this.userId) {
-        console.error('No user ID available for location update');
+        console.error('🚫 No user ID available for background location update');
         return;
       }
+
+      console.log(`🛰️ Background GPS received ${locations?.length || 0} location(s)`);
 
       for (const location of locations) {
         const locationData: LocationData = {
@@ -120,20 +138,28 @@ class GPSTrackingService {
           accuracy: location.coords.accuracy,
           altitude: location.coords.altitude,
           speed: location.coords.speed,
-          timestamp: location.timestamp,
+          timestamp: location.timestamp || Date.now(),
           userId: this.userId,
         };
+
+        console.log('🌍 Background GPS Location:', {
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          accuracy: locationData.accuracy ? `±${Math.round(locationData.accuracy)}m` : 'N/A',
+          timestamp: new Date(locationData.timestamp).toLocaleString(),
+        });
 
         // Try to send immediately
         const success = await locationApiService.sendLocation(locationData);
 
         if (!success) {
           // If failed, add to queue
+          console.log('📦 Adding location to queue for later retry');
           await this.addToQueue(locationData);
         }
       }
     } catch (error) {
-      console.error('Error handling location update:', error);
+      console.error('❌ Error handling background location update:', error);
     }
   };
 
@@ -273,26 +299,58 @@ class GPSTrackingService {
 
   async getCurrentLocation(): Promise<LocationData | null> {
     try {
-      if (!this.userId) return null;
+      console.log('🔍 GPS Service - getCurrentLocation called');
+      console.log('👤 GPS Service - Current userId:', this.userId);
+      console.log('📊 GPS Service - Is tracking:', this.isTracking);
 
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') return null;
+      if (!this.userId) {
+        console.log('🚫 GPS Service - No user ID available for location tracking');
+        console.log('🔍 GPS Service - Debugging userId state:', {
+          userId: this.userId,
+          typeOf: typeof this.userId,
+          length: this.userId?.length || 'undefined'
+        });
+        return null;
+      }
 
+      // Use cached permissions status to avoid repeated permission checks
+      console.log('📱 GPS Service - Checking permissions...');
+      const { status } = await Location.getForegroundPermissionsAsync();
+      console.log('📱 GPS Service - Permission status:', status);
+
+      if (status !== 'granted') {
+        console.log('🚫 GPS Service - Location permissions not granted');
+        return null;
+      }
+
+      console.log('🔍 GPS Service - Getting current GPS location...');
+
+      // Use balanced accuracy for better performance and battery life
       const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
+        accuracy: Location.Accuracy.Balanced,
+        maximumAge: 10000, // Accept location up to 10 seconds old
+        timeout: 15000, // 15 second timeout
       });
 
-      return {
+      const locationData = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         accuracy: location.coords.accuracy,
         altitude: location.coords.altitude,
         speed: location.coords.speed,
-        timestamp: location.timestamp,
+        timestamp: location.timestamp || Date.now(),
         userId: this.userId,
       };
+
+      console.log('✅ GPS Service - GPS location obtained successfully');
+      console.log('📍 GPS Service - Location data:', {
+        lat: locationData.latitude,
+        lng: locationData.longitude,
+        userId: locationData.userId
+      });
+      return locationData;
     } catch (error) {
-      console.error('Error getting current location:', error);
+      console.error('❌ GPS Service - Error getting current location:', error);
       return null;
     }
   }

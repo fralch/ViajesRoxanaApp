@@ -31,29 +31,41 @@ export const useGPSTracking = () => {
   // Initialize tracking when child user logs in
   useEffect(() => {
     const initializeForChildUser = async () => {
+      console.log('🔄 Initializing GPS tracking for user:', {
+        isAuthenticated,
+        userRole: user?.role,
+        userId: user?.id,
+        hasToken: !!user?.token
+      });
+
       if (isAuthenticated && user?.role === 'student' && user.token) {
         // Set auth token for API calls
         locationApiService.setAuthToken(user.token);
 
         // Check if tracking should be started
         const trackingState = await gpsTrackingService.getTrackingState();
+        console.log('📊 Current tracking state:', trackingState);
 
         if (!trackingState.isActive || trackingState.userId !== user.id) {
           // Start tracking for this child user
+          console.log('🎯 Starting GPS tracking for child user');
           await startTracking();
         } else {
           // Update state to reflect active tracking
+          console.log('✅ GPS tracking already active, updating state');
           setState(prev => ({
             ...prev,
             isTracking: true,
             hasPermissions: true,
           }));
 
-          // Update queue size
+          // Update queue size and location
           updateQueueSize();
+          updateCurrentLocation();
         }
       } else if (!isAuthenticated || user?.role !== 'student') {
         // Stop tracking if user is not a child or not authenticated
+        console.log('🛑 Stopping GPS tracking - user not child or not authenticated');
         await stopTracking();
         locationApiService.clearAuthToken();
       }
@@ -62,13 +74,24 @@ export const useGPSTracking = () => {
     initializeForChildUser();
   }, [isAuthenticated, user]);
 
-  // Update queue size periodically
+  // Update queue size and location periodically
   useEffect(() => {
     if (state.isTracking) {
-      const interval = setInterval(updateQueueSize, 30000); // Every 30 seconds
-      return () => clearInterval(interval);
+      console.log('⏰ Starting GPS update intervals - location every 20s, queue every 30s');
+
+      const queueInterval = setInterval(updateQueueSize, 30000); // Every 30 seconds
+      const locationInterval = setInterval(updateCurrentLocation, 20000); // Every 20 seconds
+
+      // Get initial location immediately
+      updateCurrentLocation();
+
+      return () => {
+        console.log('⏸️ Stopping GPS update intervals');
+        clearInterval(queueInterval);
+        clearInterval(locationInterval);
+      };
     }
-  }, [state.isTracking]);
+  }, [state.isTracking, updateQueueSize, updateCurrentLocation]);
 
   const updateQueueSize = useCallback(async () => {
     try {
@@ -83,10 +106,29 @@ export const useGPSTracking = () => {
   }, []);
 
   const startTracking = useCallback(async (): Promise<boolean> => {
+    console.log('🎯 startTracking called with user:', {
+      userId: user?.id,
+      userRole: user?.role,
+      userToken: user?.token ? 'present' : 'missing'
+    });
+
     if (!user || user.role !== 'student') {
+      console.log('🚫 GPS tracking denied - user not student:', {
+        hasUser: !!user,
+        userRole: user?.role
+      });
       setState(prev => ({
         ...prev,
         error: 'GPS tracking is only available for child users',
+      }));
+      return false;
+    }
+
+    if (!user.id) {
+      console.log('🚫 GPS tracking denied - no user ID');
+      setState(prev => ({
+        ...prev,
+        error: 'No user ID available for GPS tracking',
       }));
       return false;
     }
@@ -98,6 +140,7 @@ export const useGPSTracking = () => {
     }));
 
     try {
+      console.log('🔧 Initializing GPS tracking for user ID:', user.id);
       const success = await gpsTrackingService.initializeTracking(user.id);
 
       if (success) {
@@ -112,9 +155,12 @@ export const useGPSTracking = () => {
         // Get initial location
         await updateCurrentLocation();
 
-        console.log('GPS tracking started successfully');
+        console.log('🚀 GPS tracking started successfully from hook');
+        console.log('⏰ Location updates every 20 seconds from hook');
+        console.log('👤 Tracking for user ID:', user.id);
         return true;
       } else {
+        console.log('❌ GPS tracking initialization failed');
         setState(prev => ({
           ...prev,
           isInitializing: false,
@@ -124,7 +170,7 @@ export const useGPSTracking = () => {
         return false;
       }
     } catch (error) {
-      console.error('Error starting GPS tracking:', error);
+      console.error('❌ Error starting GPS tracking:', error);
       setState(prev => ({
         ...prev,
         isInitializing: false,
@@ -132,7 +178,7 @@ export const useGPSTracking = () => {
       }));
       return false;
     }
-  }, [user]);
+  }, [user, updateCurrentLocation]);
 
   const stopTracking = useCallback(async (): Promise<void> => {
     try {
@@ -160,6 +206,16 @@ export const useGPSTracking = () => {
     try {
       const location = await gpsTrackingService.getCurrentLocation();
       if (location) {
+        console.log('📍 GPS Location Updated:', {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracy: location.accuracy ? `±${Math.round(location.accuracy)}m` : 'N/A',
+          altitude: location.altitude ? `${Math.round(location.altitude)}m` : 'N/A',
+          speed: location.speed ? `${Math.round(location.speed * 3.6)} km/h` : '0 km/h',
+          timestamp: new Date(location.timestamp).toLocaleString(),
+          userId: location.userId,
+        });
+
         setState(prev => ({
           ...prev,
           currentLocation: {
@@ -169,9 +225,18 @@ export const useGPSTracking = () => {
           },
           lastUpdate: location.timestamp,
         }));
+
+        // Also trigger sending to API (which will show in console logs)
+        await locationApiService.sendLocation(location);
+      } else {
+        console.log('⚠️ No location data available');
       }
     } catch (error) {
-      console.error('Error updating current location:', error);
+      console.error('❌ Error updating current location:', error);
+      setState(prev => ({
+        ...prev,
+        error: 'Error getting location',
+      }));
     }
   }, []);
 
@@ -199,6 +264,34 @@ export const useGPSTracking = () => {
     }
   }, []);
 
+  // Debug function to force GPS tracking with mock data
+  const forceStartTrackingWithMockData = useCallback(async (): Promise<void> => {
+    console.log('🧪 FORCE STARTING GPS TRACKING WITH MOCK DATA');
+
+    const mockUserId = "mock-child-123";
+
+    try {
+      // Force set the GPS service with mock data
+      const success = await gpsTrackingService.initializeTracking(mockUserId);
+
+      if (success) {
+        setState(prev => ({
+          ...prev,
+          isTracking: true,
+          hasPermissions: true,
+          isInitializing: false,
+          lastUpdate: Date.now(),
+        }));
+
+        console.log('🚀 Mock GPS tracking started');
+        // Start the intervals immediately
+        updateCurrentLocation();
+      }
+    } catch (error) {
+      console.error('❌ Error starting mock GPS tracking:', error);
+    }
+  }, [updateCurrentLocation]);
+
   return {
     // State
     ...state,
@@ -212,6 +305,7 @@ export const useGPSTracking = () => {
     // Utilities
     getTrackingStatus,
     testApiConnection,
+    forceStartTrackingWithMockData,
 
     // Computed values
     canTrack: isAuthenticated && user?.role === 'student',
