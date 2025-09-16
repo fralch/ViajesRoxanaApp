@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import { FontAwesome, FontAwesome6, Ionicons } from '@expo/vector-icons';
 
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
-import { useAuth } from '../../../../shared/hooks';
+import { useAuth, useGPSTracking } from '../../../../shared/hooks';
 import { formatDateRange } from '../../../../shared/utils';
 import { GPSTrackingIndicator } from '../../../../shared/components';
 
@@ -88,6 +88,14 @@ const COLORS = {
 
 const DashboardScreen = ({ navigation }: { navigation?: any }) => {
   const { user, logout } = useAuth();
+  const { forceStartTrackingWithMockData } = useGPSTracking();
+  
+  // Auto-ejecutar el GPS tracking cuando se abre el componente
+  useEffect(() => {
+    if (user?.role === 'student') {
+      forceStartTrackingWithMockData();
+    }
+  }, [user, forceStartTrackingWithMockData]);
   
   const handleLogout = () => {
     Alert.alert(
