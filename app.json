@@ -13,7 +13,12 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ViajesRoxana necesita acceso a tu ubicación para garantizar tu seguridad durante los viajes escolares.",
+        "NSLocationWhenInUseUsageDescription": "ViajesRoxana necesita acceso a tu ubicación para mostrarte información relevante durante los viajes.",
+        "UIBackgroundModes": ["location"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -21,10 +26,32 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.fralch.ViajesRoxana"
+      "package": "com.fralch.ViajesRoxana",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
     },
 
-    "plugins": [],
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ViajesRoxana necesita acceso a tu ubicación para garantizar tu seguridad durante los viajes escolares.",
+          "locationAlwaysPermission": "ViajesRoxana necesita acceso continuo a tu ubicación para mantenerte seguro incluso cuando la app está en segundo plano.",
+          "locationWhenInUsePermission": "ViajesRoxana necesita acceso a tu ubicación para mostrarte información relevante durante los viajes.",
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      [
+        "expo-task-manager"
+      ]
+    ],
     "extra": {
       "eas": {
         "projectId": "be934916-b0cb-43e4-8888-07b3c39f454b"

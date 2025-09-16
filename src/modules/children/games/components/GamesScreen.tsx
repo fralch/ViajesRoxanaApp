@@ -9,7 +9,7 @@ import {
   Animated,
 } from 'react-native';
 import { MaterialIcons, AntDesign } from '@expo/vector-icons';
-import { Card } from '../../../../shared/components';
+import { Card, GPSTrackingIndicator } from '../../../../shared/components';
 
 const GamesScreen = ({ navigation }: any) => {
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
@@ -86,6 +86,9 @@ const GamesScreen = ({ navigation }: any) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
+        {/* GPS Tracking Indicator */}
+        <GPSTrackingIndicator showDetails={false} />
+
         {/* Header */}
         <View style={styles.header}>
           <MaterialIcons name="games" size={40} color="#e74c3c" />

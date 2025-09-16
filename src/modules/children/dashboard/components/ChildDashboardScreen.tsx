@@ -5,6 +5,7 @@ import { FontAwesome, FontAwesome6, Ionicons } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useAuth } from '../../../../shared/hooks';
 import { formatDateRange } from '../../../../shared/utils';
+import { GPSTrackingIndicator } from '../../../../shared/components';
 
 // Types for API data
 interface Child {
@@ -186,6 +187,9 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     <>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        {/* GPS Tracking Indicator */}
+        <GPSTrackingIndicator showDetails={true} />
+
         {/* Header with Child Profile */}
         <View style={[styles.header, { backgroundColor: COLORS.primary }]}>
           <Animated.View 

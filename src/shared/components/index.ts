@@ -12,6 +12,7 @@ export { default as Card } from './Card';
 export { default as Avatar } from './Avatar';
 export { default as TabBar } from './TabBar';
 export { default as ExpandableText } from './ExpandableText';
+export { default as GPSTrackingIndicator } from './GPSTrackingIndicator';
 // UserProfile moved to hooks as useUserProfile
 // AuthExample removed - functionality integrated into useAuth hook
 
