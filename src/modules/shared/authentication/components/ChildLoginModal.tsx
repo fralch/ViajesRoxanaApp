@@ -24,7 +24,7 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
   const [docNumber, setDocNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const { childLogin, isLoading } = useAuth();
 
   const handleLogin = async () => {
