@@ -22,10 +22,86 @@ export interface LoginApiResponse {
   token: string;
 }
 
+// Tipo para la respuesta del API de login de hijo
+export interface ChildLoginApiResponse {
+  success: boolean;
+  message: string;
+  hijo: {
+    id: number;
+    user_id: number;
+    nombres: string;
+    doc_tipo: string;
+    doc_numero: string;
+    password_hijo: string;
+    nums_emergencia: string[];
+    fecha_nacimiento: string | null;
+    foto: string | null;
+    pasatiempos: string | null;
+    deportes: string | null;
+    plato_favorito: string | null;
+    color_favorito: string | null;
+    informacion_adicional: string | null;
+    created_at: string;
+    updated_at: string;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      phone: string;
+      dni: string;
+      email_verified_at: string | null;
+      is_admin: boolean;
+      created_at: string;
+      updated_at: string;
+    };
+    inscripciones: Array<{
+      id: number;
+      hijo_id: number;
+      paquete_id: number;
+      grupo_id: number;
+      usuario_id: number;
+      created_at: string;
+      updated_at: string;
+      grupo: {
+        id: number;
+        paquete_id: number;
+        nombre: string;
+        fecha_inicio: string;
+        fecha_fin: string;
+        capacidad: number;
+        tipo_encargado: string[];
+        nombre_encargado: string[];
+        celular_encargado: string[];
+        tipo_encargado_agencia: string[];
+        nombre_encargado_agencia: string[];
+        celular_encargado_agencia: string[];
+        activo: boolean;
+        created_at: string;
+        updated_at: string;
+        paquete: {
+          id: number;
+          nombre: string;
+          destino: string;
+          descripcion: string;
+          activo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+    }>;
+  };
+  token: string;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;
   user_type?: 'parent' | 'child'; // Nuevo parámetro para especificar el tipo de usuario
+}
+
+export interface ChildLoginRequest {
+  doc_numero: string;
+  password_hijo: string;
 }
 
 // Configuración del API
@@ -66,6 +142,63 @@ export class AuthService {
       return data;
     } catch (error) {
       console.error('AuthService.login error:', error);
+
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      throw new Error('Error de conexión. Verifica tu internet e intenta nuevamente.');
+    }
+  }
+
+  /**
+   * Realiza el login de hijo con el endpoint real
+   */
+  static async childLogin(credentials: ChildLoginRequest): Promise<LoginApiResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/endpoint/hijo-login?doc_numero=${credentials.doc_numero}&password_hijo=${credentials.password_hijo}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
+      const data: ChildLoginApiResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Error en el login');
+      }
+
+      // Transform child login response to match the expected LoginApiResponse format
+      const transformedResponse: LoginApiResponse = {
+        success: data.success,
+        message: data.message,
+        user: {
+          id: data.hijo.id,
+          name: data.hijo.nombres,
+          email: data.hijo.user.email,
+          phone: data.hijo.user.phone,
+          dni: data.hijo.doc_numero,
+          email_verified_at: data.hijo.user.email_verified_at || '',
+          is_admin: data.hijo.user.is_admin,
+          created_at: data.hijo.created_at,
+          updated_at: data.hijo.updated_at,
+          hijos: [data.hijo], // Wrap the child data in hijos array for compatibility
+          is_child: true,
+          parent_id: data.hijo.user_id
+        },
+        token: data.token
+      };
+
+      return transformedResponse;
+    } catch (error) {
+      console.error('AuthService.childLogin error:', error);
 
       if (error instanceof Error) {
         throw error;

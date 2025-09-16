@@ -21,23 +21,22 @@ interface ChildLoginModalProps {
 }
 
 const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) => {
-  const [email, setEmail] = useState('');
+  const [docNumber, setDocNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { login, isLoading } = useAuth();
+  const { childLogin, isLoading } = useAuth();
 
   const handleLogin = async () => {
     try {
-      await login({
-        emailPhone: email,
+      await childLogin({
+        docNumber: docNumber,
         password: password,
-        remember: rememberMe,
-        userType: 'child' // Especificar que es login de hijo
+        remember: rememberMe
       });
       onClose();
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Child login error:', error);
     }
   };
 
@@ -80,8 +79,8 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
                     <TextInput
                       style={styles.input}
                       placeholder="12345678"
-                      value={email}
-                      onChangeText={setEmail}
+                      value={docNumber}
+                      onChangeText={setDocNumber}
                       keyboardType="numeric"
                       autoCapitalize="none"
                       placeholderTextColor={COLORS.placeholder}

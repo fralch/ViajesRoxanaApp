@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
-import { AuthService, LoginRequest } from '../services';
+import { AuthService, LoginRequest, ChildLoginRequest } from '../services';
 
 // Tipos para el hook de autenticación
 export interface AuthUserData {
@@ -25,6 +25,12 @@ export interface AuthLoginCredentials {
   password: string;
   remember?: boolean;
   userType?: 'parent' | 'child';
+}
+
+export interface AuthChildLoginCredentials {
+  docNumber: string;
+  password: string;
+  remember?: boolean;
 }
 
 // Constantes para las keys del storage
@@ -108,22 +114,22 @@ const useAuthInternal = () => {
   const login = useCallback(async (credentials: AuthLoginCredentials): Promise<void> => {
     try {
       setIsLoading(true);
-      
+
       // Validar credenciales antes de enviar
       const loginRequest: LoginRequest = {
         email: credentials.emailPhone,
         password: credentials.password,
         user_type: credentials.userType || 'parent'
       };
-      
+
       const validation = AuthService.validateCredentials(loginRequest);
       if (!validation.isValid) {
         throw new Error(validation.errors.join(', '));
       }
-      
+
       // Llamada real al API
       const apiResponse = await AuthService.login(loginRequest);
-      
+
       // Determinar el rol basado en el tipo de usuario enviado
       let userRole: 'student' | 'guardian' | 'admin' = 'guardian';
 
@@ -160,6 +166,56 @@ const useAuthInternal = () => {
       setIsAuthenticated(true);
     } catch (error) {
       console.error('Login error:', error);
+      throw new Error('Error al iniciar sesión. Verifica tus credenciales.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [saveToStorage]);
+
+  // Función de login para hijos usando el nuevo API
+  const childLogin = useCallback(async (credentials: AuthChildLoginCredentials): Promise<void> => {
+    try {
+      setIsLoading(true);
+
+      // Preparar la petición para el API de hijos
+      const childLoginRequest: ChildLoginRequest = {
+        doc_numero: credentials.docNumber,
+        password_hijo: credentials.password
+      };
+
+      // Llamada real al API de hijos
+      const apiResponse = await AuthService.childLogin(childLoginRequest);
+
+      // El rol para un hijo siempre será 'student'
+      const userRole: 'student' | 'guardian' | 'admin' = 'student';
+
+      // Mapear la respuesta del API a nuestro formato interno
+      const userData: AuthUserData = {
+        id: apiResponse.user.id.toString(),
+        email: apiResponse.user.email,
+        phone: apiResponse.user.phone,
+        dni: apiResponse.user.dni,
+        role: userRole,
+        name: apiResponse.user.name,
+        lastname: '', // El API no devuelve lastname separado
+        is_active: true,
+        is_admin: apiResponse.user.is_admin,
+        token: apiResponse.token,
+        created_at: apiResponse.user.created_at,
+        updated_at: apiResponse.user.updated_at,
+        hijos: apiResponse.user.hijos || [], // Include children data
+      };
+
+      // Guardar datos del usuario
+      const { token, ...userDataWithoutToken } = userData;
+      await saveToStorage(STORAGE_KEYS.USER_DATA, userDataWithoutToken);
+      await saveToStorage(STORAGE_KEYS.AUTH_TOKEN, token);
+      await saveToStorage(STORAGE_KEYS.REMEMBER_ME, credentials.remember ?? true);
+
+      setUser(userData);
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Child login error:', error);
       throw new Error('Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setIsLoading(false);
@@ -289,13 +345,14 @@ const useAuthInternal = () => {
     user,
     isLoading,
     isAuthenticated,
-    
+
     // Funciones principales
     login,
+    childLogin,
     logout,
     updateUser,
     clearAuthData,
-    
+
     // Funciones adicionales de storage
     getAuthToken,
     isUserRemembered,
