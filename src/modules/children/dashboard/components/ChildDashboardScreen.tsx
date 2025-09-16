@@ -204,9 +204,6 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
           <Text style={{ fontSize: 10 }}>isAuthenticated: {String(!!user)}</Text>
         </View>
 
-        {/* GPS Tracking Indicator */}
-        <GPSTrackingIndicator showDetails={true} />
-
         {/* Header with Child Profile */}
         <View style={[styles.header, { backgroundColor: COLORS.primary }]}>
           <Animated.View 
@@ -322,6 +319,12 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
             </Text>
           </Animated.View>
         )}
+
+        {/* Mi Ubicación - GPS Tracking */}
+        <View style={styles.locationSection}>
+          <Text style={styles.locationTitle}>📍 ¿Dónde estoy ahora?</Text>
+          <GPSTrackingIndicator showDetails={true} />
+        </View>
 
 
       </ScrollView>
@@ -545,6 +548,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     lineHeight: 20,
+  },
+  locationSection: {
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  locationTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.textPrimary,
+    marginBottom: 8,
+    textAlign: 'center',
   },
 });
 

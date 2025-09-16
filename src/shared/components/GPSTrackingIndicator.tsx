@@ -24,177 +24,256 @@ const GPSTrackingIndicator: React.FC<GPSTrackingIndicatorProps> = ({
     forceStartTrackingWithMockData,
   } = useGPSTracking();
 
-  if (!isChildUser) {
-    return null; // Only show for child users
-  }
+  if (!isChildUser) return null; // Solo para usuarios hijo
 
-  const getStatusColor = () => {
-    if (error) return '#e74c3c';
-    if (isInitializing) return '#f39c12';
-    if (isTracking && hasPermissions) return '#27ae60';
-    return '#95a5a6';
-  };
-
-  const getStatusIcon = () => {
-    if (error) return 'error';
-    if (isInitializing) return 'hourglass-empty';
-    if (isTracking && hasPermissions) return 'gps-fixed';
-    return 'gps-off';
+  const getStatusConfig = () => {
+    if (error) {
+      return {
+        color: '#e74c3c',
+        bgColor: '#fdecea', // rojo muy claro
+        icon: 'error-outline',
+      };
+    }
+    if (isInitializing) {
+      return {
+        color: '#e74c3c',
+        bgColor: '#fdecea',
+        icon: 'hourglass-empty',
+      };
+    }
+    if (isTracking && hasPermissions) {
+      return {
+        color: '#e74c3c',
+        bgColor: '#fdecea',
+        icon: 'gps-fixed',
+      };
+    }
+    return {
+      color: '#e74c3c',
+      bgColor: '#fdecea',
+      icon: 'gps-off',
+    };
   };
 
   const getStatusText = () => {
-    if (error) return 'Error GPS';
-    if (isInitializing) return 'Iniciando GPS...';
-    if (isTracking && hasPermissions) return 'GPS Activo';
-    return 'GPS Inactivo';
+    if (error) return '¡Ups! Problema con mi ubicación 😅';
+    if (isInitializing) return '¡Buscando dónde estoy! 🔍';
+    if (isTracking && hasPermissions) return '¡Ya sé dónde estoy!';
+    return 'No puedo ver dónde estoy 😴';
   };
 
   const formatLastUpdate = () => {
-    if (!lastUpdate) return 'Nunca';
+    if (!lastUpdate) return 'Nunca he visto mi ubicación';
     const now = Date.now();
     const diff = now - lastUpdate;
     const minutes = Math.floor(diff / 60000);
     const seconds = Math.floor((diff % 60000) / 1000);
 
     if (minutes > 0) {
-      return `hace ${minutes}m`;
+      return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
     }
-    return `hace ${seconds}s`;
+    return `Hace ${seconds} segundo${seconds > 1 ? 's' : ''}`;
   };
 
+  const statusConfig = getStatusConfig();
   const Component = onPress ? TouchableOpacity : View;
 
   return (
     <Component
-      style={[styles.container, { borderColor: getStatusColor() }]}
+      style={styles.container}
       onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
+      activeOpacity={onPress ? 0.8 : 1}
     >
-      <View style={styles.header}>
-        <MaterialIcons
-          name={getStatusIcon()}
-          size={16}
-          color={getStatusColor()}
-          style={styles.icon}
-        />
-        <Text style={[styles.statusText, { color: getStatusColor() }]}>
-          {getStatusText()}
-        </Text>
-        {queueSize > 0 && (
-          <View style={styles.queueBadge}>
-            <Text style={styles.queueText}>{queueSize}</Text>
+      <View
+        style={[
+          styles.cardContainer,
+          { backgroundColor: statusConfig.bgColor, borderLeftColor: statusConfig.color },
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={[styles.iconContainer, { backgroundColor: statusConfig.color }]}>
+            <MaterialIcons
+              name={statusConfig.icon as 'error-outline' | 'hourglass-empty' | 'gps-fixed' | 'gps-off'}
+              size={20}
+              color="#ffffff"
+            />
           </View>
-        )}
-      </View>
 
-      {showDetails && (
-        <View style={styles.details}>
-          {currentLocation && (
-            <Text style={styles.detailText}>
-              📍 {currentLocation.latitude.toFixed(6)}, {currentLocation.longitude.toFixed(6)}
+          <View style={styles.statusContent}>
+            <Text style={styles.statusText}>{getStatusText()}</Text>
+            <Text style={[styles.statusSubtext, { color: statusConfig.color }]}>
+              Estado del GPS
             </Text>
-          )}
-          <Text style={styles.detailText}>
-            🕒 Última actualización: {formatLastUpdate()}
-          </Text>
-          {currentLocation?.accuracy && (
-            <Text style={styles.detailText}>
-              🎯 Precisión: ±{Math.round(currentLocation.accuracy)}m
-            </Text>
-          )}
-          {error && (
-            <Text style={styles.errorText}>
-              ⚠️ {error}
-            </Text>
+          </View>
+
+          {queueSize > 0 && (
+            <View style={styles.queueBadge}>
+              <Text style={styles.queueText}>{queueSize}</Text>
+            </View>
           )}
         </View>
-      )}
 
-      {/* Debug Button - Development Only */}
-      {showDetails && (
-        <TouchableOpacity
-          style={styles.debugButton}
-          onPress={() => {
-            console.log('🧪 Debug button pressed - forcing GPS start');
-            forceStartTrackingWithMockData();
-          }}
-        >
-          <Text style={styles.debugButtonText}>🧪 Force Start GPS (Debug)</Text>
-        </TouchableOpacity>
-      )}
+        {/* Detalles */}
+        {showDetails && (
+          <View style={styles.details}>
+            <View style={styles.divider} />
+
+            {currentLocation && (
+              <View style={styles.detailRow}>
+                <MaterialIcons name="place" size={16} color="#222" />
+                <Text style={styles.detailText}>
+                  Ubicación: {currentLocation.latitude.toFixed(4)}, {currentLocation.longitude.toFixed(4)}
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.detailRow}>
+              <MaterialIcons name="schedule" size={16} color="#222" />
+              <Text style={styles.detailText}>{formatLastUpdate()}</Text>
+            </View>
+
+            {currentLocation?.accuracy && (
+              <View style={styles.detailRow}>
+                <MaterialIcons name="my-location" size={16} color="#222" />
+                <Text style={styles.detailText}>Precisión: ±{Math.round(currentLocation.accuracy)}m</Text>
+              </View>
+            )}
+
+            {error && (
+              <View style={styles.errorContainer}>
+                <MaterialIcons name="warning" size={16} color="#222" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Debug - Solo dev */}
+        {showDetails && (
+          <TouchableOpacity
+            style={styles.debugButton}
+            onPress={forceStartTrackingWithMockData}
+            activeOpacity={0.8}
+          >
+            <MaterialIcons name="bug-report" size={16} color="#ffffff" />
+            <Text style={styles.debugButtonText}>Probar ubicación</Text>
+          </TouchableOpacity>
+        )}
+      </View>
     </Component>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 8,
-    padding: 12,
-    margin: 8,
-    borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    marginHorizontal: 16,
+    marginVertical: 8,
+    borderRadius: 20,
+    shadowColor: '#e74c3c',
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  cardContainer: {
+    borderRadius: 20,
+    padding: 20,
+    borderLeftWidth: 5,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  icon: {
-    marginRight: 8,
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
   },
+  statusContent: { flex: 1 },
   statusText: {
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#e74c3c',
+    marginBottom: 2,
+  },
+  statusSubtext: {
+    fontSize: 12,
     fontWeight: '600',
-    flex: 1,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   queueBadge: {
     backgroundColor: '#e74c3c',
-    borderRadius: 10,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    minWidth: 20,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minWidth: 28,
     alignItems: 'center',
+    shadowColor: '#e74c3c',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   queueText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
-  details: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
+  details: { marginTop: 16 },
+  divider: {
+    height: 1,
+    backgroundColor: '#fadbd8',
+    marginBottom: 16,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   detailText: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 2,
+    fontSize: 14,
+    color: '#222', // rojo un poco más oscuro para contraste
+    fontWeight: '500',
+    marginLeft: 12,
+    flex: 1,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fdecea',
+    padding: 12,
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: '#e74c3c',
+    marginTop: 8,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#e74c3c',
-    marginTop: 4,
+    fontWeight: '600',
+    marginLeft: 8,
+    flex: 1,
   },
   debugButton: {
-    marginTop: 8,
-    backgroundColor: '#8e44ad',
-    borderRadius: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    marginTop: 16,
+    backgroundColor: '#e74c3c',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
   },
   debugButtonText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 8,
   },
 });
 
