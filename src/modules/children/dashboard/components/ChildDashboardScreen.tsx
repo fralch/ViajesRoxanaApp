@@ -144,7 +144,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     {
       id: 1,
       title: "¿Dónde estoy?",
-      subtitle: "¡Ve tu ubicación! 📍",
+      subtitle: "¡Ve tu ubicación! ",
       icon: <FontAwesome6 name="map-location-dot" size={24} color="#fff" />,
       color: COLORS.primary,
       action: () => {
@@ -154,7 +154,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
     {
       id: 2,
       title: "Mi Perfil",
-      subtitle: "¡Conóceme más! 👤",
+      subtitle: "¡Conóceme más! ",
       icon: <FontAwesome name="user" size={24} color="#fff" />,
       color: COLORS.secondary,
       action: () => {
@@ -240,7 +240,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
         >
           <View style={styles.adventureHeader}>
             <Text style={styles.adventureTitle}>Mi Aventura Actual ✨</Text>
-            <Text style={styles.adventureEmoji}>🎯</Text>
+      
           </View>
           
           <Text style={styles.destination}>{currentTrip.destination}</Text>
