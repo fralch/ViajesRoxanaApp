@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { LocationData } from './gpsTrackingService';
 
-const API_BASE_URL = 'https://api.viajesroxana.com'; // Replace with actual API URL
-const LOCATION_ENDPOINT = '/api/v1/locations';
+const API_BASE_URL = 'https://grupoviajesroxana.com';
+const LOCATION_ENDPOINT = '/api/v1/endpoint/geolocalizacion';
 const REQUEST_TIMEOUT = 10000; // 10 seconds
 
 export interface ApiResponse<T> {
@@ -13,17 +13,9 @@ export interface ApiResponse<T> {
 }
 
 export interface LocationPayload {
-  user_id: string;
-  latitude: number;
-  longitude: number;
-  accuracy?: number;
-  altitude?: number;
-  speed?: number;
-  timestamp: number;
-  device_info?: {
-    platform: string;
-    version: string;
-  };
+  hijo_id: string;
+  latitud: number;
+  longitud: number;
 }
 
 class LocationApiService {
@@ -37,6 +29,7 @@ class LocationApiService {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'Cookie': 'viajesroxana-session=Y9V2zamYDmo7wPM5tgxg93dfGj3P1XfuyfvEkExD'
       },
     });
 
@@ -74,121 +67,72 @@ class LocationApiService {
   async sendLocation(locationData: LocationData): Promise<boolean> {
     try {
       const payload: LocationPayload = {
-        user_id: locationData.userId,
-        latitude: locationData.latitude,
-        longitude: locationData.longitude,
-        accuracy: locationData.accuracy,
-        altitude: locationData.altitude,
-        speed: locationData.speed,
-        timestamp: locationData.timestamp,
-        device_info: {
-          platform: 'react-native',
-          version: '1.0.0',
-        },
+        hijo_id: locationData.userId,
+        latitud: locationData.latitude,
+        longitud: locationData.longitude,
       };
 
-      // Since API is not connected yet, log the coordinates that would be sent
-      console.log('🌍 GPS Coordinates to send to API:', {
-        userId: payload.user_id,
-        latitude: payload.latitude,
-        longitude: payload.longitude,
-        accuracy: payload.accuracy ? `±${Math.round(payload.accuracy)}m` : 'N/A',
-        altitude: payload.altitude ? `${Math.round(payload.altitude)}m` : 'N/A',
-        speed: payload.speed ? `${Math.round(payload.speed * 3.6)} km/h` : '0 km/h',
-        timestamp: new Date(payload.timestamp).toLocaleString(),
-        deviceInfo: payload.device_info,
+      console.log('🌍 Sending GPS Coordinates to API:', {
+        hijo_id: payload.hijo_id,
+        latitud: payload.latitud,
+        longitud: payload.longitud,
+        timestamp: new Date(locationData.timestamp).toLocaleString(),
       });
 
-      // Simulate successful API response for now
-      console.log('✅ Location would be sent successfully to API');
-      return true;
-
-      // TODO: Uncomment when API is ready
-      /*
       const response = await this.client.post<ApiResponse<any>>(
         LOCATION_ENDPOINT,
         payload
       );
 
       if (response.status === 200 || response.status === 201) {
-        console.log('Location sent successfully:', locationData.timestamp);
+        console.log('✅ Location sent successfully:', locationData.timestamp);
         return true;
       } else {
         console.error('Unexpected response status:', response.status);
         return false;
       }
-      */
     } catch (error) {
-      console.error('Error processing location:', error);
+      console.error('Error sending location:', error);
       return false;
     }
   }
 
   async sendLocationBatch(locations: LocationData[]): Promise<{ success: boolean; failedCount: number }> {
-    try {
-      const payloads: LocationPayload[] = locations.map(location => ({
-        user_id: location.userId,
-        latitude: location.latitude,
-        longitude: location.longitude,
-        accuracy: location.accuracy,
-        altitude: location.altitude,
-        speed: location.speed,
-        timestamp: location.timestamp,
-        device_info: {
-          platform: 'react-native',
-          version: '1.0.0',
-        },
-      }));
+    let failedCount = 0;
 
-      // Since API is not connected yet, log the batch coordinates that would be sent
-      console.log(`📦 GPS Batch (${locations.length} locations) to send to API:`);
-      payloads.forEach((payload, index) => {
-        console.log(`  [${index + 1}/${payloads.length}]`, {
-          userId: payload.user_id,
-          latitude: payload.latitude,
-          longitude: payload.longitude,
-          accuracy: payload.accuracy ? `±${Math.round(payload.accuracy)}m` : 'N/A',
-          timestamp: new Date(payload.timestamp).toLocaleString(),
-        });
-      });
-
-      // Simulate successful API response for now
-      console.log(`✅ Batch of ${locations.length} locations would be sent successfully to API`);
-      return { success: true, failedCount: 0 };
-
-      // TODO: Uncomment when API is ready
-      /*
-      const response = await this.client.post<ApiResponse<any>>(
-        `${LOCATION_ENDPOINT}/batch`,
-        { locations: payloads }
-      );
-
-      if (response.status === 200 || response.status === 201) {
-        console.log(`Batch of ${locations.length} locations sent successfully`);
-        return { success: true, failedCount: 0 };
-      } else {
-        console.error('Unexpected response status for batch:', response.status);
-        return { success: false, failedCount: locations.length };
+    for (const location of locations) {
+      const success = await this.sendLocation(location);
+      if (!success) {
+        failedCount++;
       }
-      */
-    } catch (error) {
-      console.error('Error processing location batch:', error);
-      return { success: false, failedCount: locations.length };
+
+      // Small delay between requests to avoid overwhelming the API
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
+
+    const successCount = locations.length - failedCount;
+    console.log(`📦 Batch complete: ${successCount}/${locations.length} locations sent successfully`);
+
+    return {
+      success: failedCount === 0,
+      failedCount
+    };
   }
 
   async testConnection(): Promise<boolean> {
     try {
-      // Since API is not connected yet, simulate successful connection for now
-      console.log('🔧 Testing API connection... (simulated)');
-      console.log('✅ API connection test passed (simulated)');
-      return true;
+      console.log('🔧 Testing API connection...');
 
-      // TODO: Uncomment when API is ready
-      /*
-      const response = await this.client.get('/api/v1/health');
-      return response.status === 200;
-      */
+      // Test with a dummy location to check if the endpoint is working
+      const testPayload: LocationPayload = {
+        hijo_id: "test",
+        latitud: 0,
+        longitud: 0
+      };
+
+      const response = await this.client.post(LOCATION_ENDPOINT, testPayload);
+      console.log('✅ API connection test passed');
+      return response.status === 200 || response.status === 201;
     } catch (error) {
       console.error('API connection test failed:', error);
       return false;

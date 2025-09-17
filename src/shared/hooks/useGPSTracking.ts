@@ -46,7 +46,7 @@ export const useGPSTracking = () => {
         const trackingState = await gpsTrackingService.getTrackingState();
         console.log('📊 Current tracking state:', trackingState);
 
-        if (!trackingState.isActive || trackingState.userId !== user.id) {
+        if (!trackingState.isActive || trackingState.userId !== user.dni) {
           // Start tracking for this child user
           console.log('🎯 Starting GPS tracking for child user');
           await startTracking();
@@ -124,11 +124,11 @@ export const useGPSTracking = () => {
       return false;
     }
 
-    if (!user.id) {
-      console.log('🚫 GPS tracking denied - no user ID');
+    if (!user.dni) {
+      console.log('🚫 GPS tracking denied - no user DNI');
       setState(prev => ({
         ...prev,
-        error: 'No user ID available for GPS tracking',
+        error: 'No user DNI available for GPS tracking',
       }));
       return false;
     }
@@ -140,8 +140,8 @@ export const useGPSTracking = () => {
     }));
 
     try {
-      console.log('🔧 Initializing GPS tracking for user ID:', user.id);
-      const success = await gpsTrackingService.initializeTracking(user.id);
+      console.log('🔧 Initializing GPS tracking for user DNI:', user.dni);
+      const success = await gpsTrackingService.initializeTracking(user.dni);
 
       if (success) {
         setState(prev => ({
@@ -157,7 +157,7 @@ export const useGPSTracking = () => {
 
         console.log('🚀 GPS tracking started successfully from hook');
         console.log('⏰ Location updates every 20 seconds from hook');
-        console.log('👤 Tracking for user ID:', user.id);
+        console.log('👤 Tracking for user DNI:', user.dni);
         return true;
       } else {
         console.log('❌ GPS tracking initialization failed');
@@ -268,7 +268,7 @@ export const useGPSTracking = () => {
   const forceStartTrackingWithMockData = useCallback(async (): Promise<void> => {
     console.log('🧪 FORCE STARTING GPS TRACKING WITH MOCK DATA');
 
-    const mockUserId = "mock-child-123";
+    const mockUserId = "71655501";
 
     try {
       // Force set the GPS service with mock data
