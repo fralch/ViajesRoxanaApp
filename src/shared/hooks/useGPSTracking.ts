@@ -74,6 +74,56 @@ export const useGPSTracking = () => {
     initializeForChildUser();
   }, [isAuthenticated, user]);
 
+  const updateCurrentLocation = useCallback(async (): Promise<void> => {
+    try {
+      const location = await gpsTrackingService.getCurrentLocation();
+      if (location) {
+        console.log('📍 GPS Location Updated:', {
+          latitude: location.latitude,
+          longitude: location.longitude,
+          accuracy: location.accuracy ? `±${Math.round(location.accuracy)}m` : 'N/A',
+          altitude: location.altitude ? `${Math.round(location.altitude)}m` : 'N/A',
+          speed: location.speed ? `${Math.round(location.speed * 3.6)} km/h` : '0 km/h',
+          timestamp: new Date(location.timestamp).toLocaleString(),
+          userId: location.userId,
+        });
+
+        setState(prev => ({
+          ...prev,
+          currentLocation: {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            accuracy: location.accuracy,
+          },
+          lastUpdate: location.timestamp,
+        }));
+
+        // Also trigger sending to API (which will show in console logs)
+        await locationApiService.sendLocation(location);
+      } else {
+        console.log('⚠️ No location data available');
+      }
+    } catch (error) {
+      console.error('❌ Error updating current location:', error);
+      setState(prev => ({
+        ...prev,
+        error: 'Error getting location',
+      }));
+    }
+  }, []);
+
+  const updateQueueSize = useCallback(async () => {
+    try {
+      const queueSize = await gpsTrackingService.getQueueSize();
+      setState(prev => ({
+        ...prev,
+        queueSize,
+      }));
+    } catch (error) {
+      console.error('Error updating queue size:', error);
+    }
+  }, []);
+
   // Update queue size and location periodically
   useEffect(() => {
     if (state.isTracking) {
@@ -92,18 +142,6 @@ export const useGPSTracking = () => {
       };
     }
   }, [state.isTracking, updateQueueSize, updateCurrentLocation]);
-
-  const updateQueueSize = useCallback(async () => {
-    try {
-      const queueSize = await gpsTrackingService.getQueueSize();
-      setState(prev => ({
-        ...prev,
-        queueSize,
-      }));
-    } catch (error) {
-      console.error('Error updating queue size:', error);
-    }
-  }, []);
 
   const startTracking = useCallback(async (): Promise<boolean> => {
     console.log('🎯 startTracking called with user:', {
@@ -198,44 +236,6 @@ export const useGPSTracking = () => {
       setState(prev => ({
         ...prev,
         error: 'Error stopping GPS tracking',
-      }));
-    }
-  }, []);
-
-  const updateCurrentLocation = useCallback(async (): Promise<void> => {
-    try {
-      const location = await gpsTrackingService.getCurrentLocation();
-      if (location) {
-        console.log('📍 GPS Location Updated:', {
-          latitude: location.latitude,
-          longitude: location.longitude,
-          accuracy: location.accuracy ? `±${Math.round(location.accuracy)}m` : 'N/A',
-          altitude: location.altitude ? `${Math.round(location.altitude)}m` : 'N/A',
-          speed: location.speed ? `${Math.round(location.speed * 3.6)} km/h` : '0 km/h',
-          timestamp: new Date(location.timestamp).toLocaleString(),
-          userId: location.userId,
-        });
-
-        setState(prev => ({
-          ...prev,
-          currentLocation: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-            accuracy: location.accuracy,
-          },
-          lastUpdate: location.timestamp,
-        }));
-
-        // Also trigger sending to API (which will show in console logs)
-        await locationApiService.sendLocation(location);
-      } else {
-        console.log('⚠️ No location data available');
-      }
-    } catch (error) {
-      console.error('❌ Error updating current location:', error);
-      setState(prev => ({
-        ...prev,
-        error: 'Error getting location',
       }));
     }
   }, []);
