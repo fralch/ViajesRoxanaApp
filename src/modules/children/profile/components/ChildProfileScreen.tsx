@@ -171,24 +171,45 @@ interface PersonalDataScreenProps {
 
 const ChildProfileScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
   const { user, isAuthenticated } = useAuth();
-  
-  // Datos hardcodeados de ejemplo para el hijo
-  const defaultChildData = {
-    id: 1,
-    user_id: 1,
-    nombres: "Sofía Valentina García López",
-    doc_tipo: "DNI",
-    doc_numero: "87654321",
-    nums_emergencia: ["+51 987 654 321", "+51 912 345 678"],
-    fecha_nacimiento: "2015-03-15",
-    foto: null,
-    informacion_adicional: "Es muy sociable y le encanta hacer nuevos amigos. Le gusta ayudar a sus compañeros y es muy creativa. Tiene alergia leve a los mariscos.",
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-01-15T10:00:00Z",
-    inscripciones: []
+
+  // Obtener datos del hijo basado en el tipo de usuario logueado
+  const getChildData = () => {
+    if (!user || !isAuthenticated) {
+      return null;
+    }
+
+    // Si el usuario logueado es un student (hijo), usar los datos del hijo desde hijos array
+    // Cuando un hijo se loguea, los datos del hijo están en user.hijos[0]
+    if (user.role === 'student' && user.hijos && user.hijos.length > 0) {
+      return user.hijos[0];
+    }
+
+    // Si es un padre y se pasó childData por parámetros, usarlo
+    if (route?.params?.childData) {
+      return route.params.childData;
+    }
+
+    // Si es un padre pero no hay childData, usar el primer hijo si existe
+    if (user.hijos && user.hijos.length > 0) {
+      return user.hijos[0];
+    }
+
+    return null;
   };
-  
-  const childData = route?.params?.childData || defaultChildData;
+
+  const childData = getChildData();
+
+  // Si no hay datos del hijo, mostrar mensaje
+  if (!childData) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={styles.title}>No hay datos del perfil disponibles</Text>
+        <Text style={styles.subtitle}>
+          {!isAuthenticated ? 'Debes iniciar sesión primero' : 'No se encontraron datos del hijo'}
+        </Text>
+      </View>
+    );
+  }
   
   // Siempre mostrar perfil del hijo
   const isChildProfile = true;
@@ -277,11 +298,13 @@ const ChildProfileScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
             label={`DNI ${maskDocument(personalInfo.document_number)}`}
             tone="primary"
           />
-          <Chip
-            icon={<Feather name="user" size={16} color="#374151" />}
-            label={`${personalInfo.age ?? "-"} años`}
-            tone={isMinor ? "primary" : "default"}
-          />
+          {childData?.fecha_nacimiento && (
+            <Chip
+              icon={<Feather name="user" size={16} color="#374151" />}
+              label={`${personalInfo.age ?? "-"} años`}
+              tone={isMinor ? "primary" : "default"}
+            />
+          )}
           {user && (
             <Chip
               icon={<Feather name={user.is_active ? "check-circle" : "x-circle"} size={16} color={user.is_active ? "#059669" : "#dc2626"} />}
@@ -370,26 +393,28 @@ const ChildProfileScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
             />
           )}
 
-          <View style={styles.row}>
-            <View style={[styles.col, { marginRight: 8 }]}>
-              <ReadonlyField
-                label="Fecha de Nacimiento"
-                value={new Date(personalInfo.birth_date).toLocaleDateString('es-PE', {
-                  day: '2-digit',
-                  month: '2-digit', 
-                  year: 'numeric'
-                })}
-                icon={<Feather name="calendar" size={18} color={MUTED} />}
-              />
+          {childData?.fecha_nacimiento && (
+            <View style={styles.row}>
+              <View style={[styles.col, { marginRight: 8 }]}>
+                <ReadonlyField
+                  label="Fecha de Nacimiento"
+                  value={new Date(personalInfo.birth_date).toLocaleDateString('es-PE', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                  })}
+                  icon={<Feather name="calendar" size={18} color={MUTED} />}
+                />
+              </View>
+              <View style={[styles.col, { marginLeft: 8 }]}>
+                <ReadonlyField
+                  label="Edad"
+                  value={`${personalInfo.age ?? "-"} años`}
+                  icon={<Feather name="hash" size={18} color={MUTED} />}
+                />
+              </View>
             </View>
-            <View style={[styles.col, { marginLeft: 8 }]}>
-              <ReadonlyField
-                label="Edad"
-                value={`${personalInfo.age ?? "-"} años`}
-                icon={<Feather name="hash" size={18} color={MUTED} />}
-              />
-            </View>
-          </View>
+          )}
         </Section>
 
         {/* Contactos de Emergencia */}
@@ -432,11 +457,86 @@ const ChildProfileScreen: React.FC<PersonalDataScreenProps> = ({ route }) => {
           {/* Mostrar información adicional específica del hijo */}
           {isChildProfile && childData && (
             <>
-             
+              {childData.pasatiempos && (
+                <View style={styles.noteBox}>
+                  <Feather name="heart" size={18} color={PRIMARY} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.noteText, { fontWeight: '600', marginBottom: 4 }]}>Pasatiempos:</Text>
+                    <Text style={styles.noteText}>{childData.pasatiempos}</Text>
+                  </View>
+                </View>
+              )}
+
+              {childData.deportes && (
+                <View style={[styles.noteBox, { marginTop: 8 }]}>
+                  <MaterialIcons name="sports-soccer" size={18} color={PRIMARY} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.noteText, { fontWeight: '600', marginBottom: 4 }]}>Deportes:</Text>
+                    <Text style={styles.noteText}>{childData.deportes}</Text>
+                  </View>
+                </View>
+              )}
+
+              {childData.plato_favorito && (
+                <View style={[styles.noteBox, { marginTop: 8 }]}>
+                  <MaterialIcons name="restaurant" size={18} color={PRIMARY} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.noteText, { fontWeight: '600', marginBottom: 4 }]}>Plato Favorito:</Text>
+                    <Text style={styles.noteText}>{childData.plato_favorito}</Text>
+                  </View>
+                </View>
+              )}
+
+              {childData.color_favorito && (
+                <View style={[styles.noteBox, { marginTop: 8 }]}>
+                  <MaterialIcons name="palette" size={18} color={PRIMARY} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.noteText, { fontWeight: '600', marginBottom: 4 }]}>Color Favorito:</Text>
+                    <Text style={styles.noteText}>{childData.color_favorito}</Text>
+                  </View>
+                </View>
+              )}
             </>
           )}
         </Section>
-      
+
+        {/* Inscripciones Activas */}
+        {isChildProfile && childData && childData.inscripciones && childData.inscripciones.length > 0 && (
+          <Section
+            title={(
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialIcons name="card-membership" size={18} color="#d62e29" />
+                <Text style={styles.sectionTitle}>Inscripciones Activas</Text>
+              </View>
+            )}
+            subtitle="Viajes y grupos inscritos">
+            {childData.inscripciones.map((inscripcion :any, index :number) => (
+              <View key={inscripcion.id} style={[styles.noteBox, { marginBottom: index < childData.inscripciones.length - 1 ? 8 : 0 }]}>
+                <MaterialIcons name="airplanemode-active" size={18} color={PRIMARY} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.noteText, { fontWeight: '600', marginBottom: 4 }]}>
+                    {inscripcion.grupo.paquete.nombre}
+                  </Text>
+                  <Text style={styles.noteText}>
+                    Grupo: {inscripcion.grupo.nombre}
+                  </Text>
+                  <Text style={styles.noteText}>
+                    Destino: {inscripcion.grupo.paquete.destino}
+                  </Text>
+                  <Text style={styles.noteText}>
+                    Fechas: {new Date(inscripcion.grupo.fecha_inicio).toLocaleDateString('es-PE')} - {new Date(inscripcion.grupo.fecha_fin).toLocaleDateString('es-PE')}
+                  </Text>
+                  {inscripcion.grupo.nombre_encargado && inscripcion.grupo.nombre_encargado[0] && (
+                    <Text style={styles.noteText}>
+                      Encargado: {inscripcion.grupo.nombre_encargado[0]}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            ))}
+          </Section>
+        )}
+
       </ScrollView>
     </View>
   );
