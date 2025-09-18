@@ -1,5 +1,5 @@
 // WelcomeScreen.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { useNavigation } from '@react-navigation/native';
 import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated';
 import ParentLoginModal from './ParentLoginModal';
 import ChildLoginModal from './ChildLoginModal';
+import PrivacyPolicyModal from './PrivacyPolicyModal';
 
 const { height, width } = Dimensions.get('window');
 
@@ -87,6 +88,12 @@ const WelcomeScreen = () => {
   const navigation = useNavigation();
   const [parentModalVisible, setParentModalVisible] = useState(false);
   const [childModalVisible, setChildModalVisible] = useState(false);
+  const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+
+  // Mostrar el modal de privacidad automáticamente al cargar el componente
+  useEffect(() => {
+    setPrivacyModalVisible(true);
+  }, []);
 
   const handleParentLogin = () => {
     setParentModalVisible(true);
@@ -94,6 +101,14 @@ const WelcomeScreen = () => {
 
   const handleChildLogin = () => {
     setChildModalVisible(true);
+  };
+
+  const handlePrivacyAccept = () => {
+    setPrivacyModalVisible(false);
+  };
+
+  const handlePrivacyClose = () => {
+    setPrivacyModalVisible(false);
   };
 
   // Responsive values
@@ -228,6 +243,12 @@ const WelcomeScreen = () => {
       <ChildLoginModal
         visible={childModalVisible}
         onClose={() => setChildModalVisible(false)}
+      />
+
+      <PrivacyPolicyModal
+        visible={privacyModalVisible}
+        onClose={handlePrivacyClose}
+        onAccept={handlePrivacyAccept}
       />
     </SafeAreaView>
   );
