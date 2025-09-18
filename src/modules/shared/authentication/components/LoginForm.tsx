@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Linking, // ← Agregado para WhatsApp
 } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -44,8 +45,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onClose, userType = 'parent' }) =
     }
   };
 
-  const handleForgotPassword = () => {
-    Alert.alert('Recuperar contraseña', 'Se enviará un enlace de recuperación a tu email');
+  // ← Función modificada para WhatsApp
+  const handleForgotPassword = async () => {
+    const phoneNumber = '51988868250'; // Sin espacios ni símbolos +
+    const message = 'ayudame a recuperar mi contraseña';
+    const whatsappUrl = `whatsapp://send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
+    
+    try {
+      // Verificar si WhatsApp está instalado
+      const supported = await Linking.canOpenURL(whatsappUrl);
+      
+      if (supported) {
+        await Linking.openURL(whatsappUrl);
+      } else {
+        // Si WhatsApp no está instalado, abrir en el navegador
+        const webUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+        await Linking.openURL(webUrl);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo abrir WhatsApp. Verifica que esté instalado.');
+    }
   };
 
   return (

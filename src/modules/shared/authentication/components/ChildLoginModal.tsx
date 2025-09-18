@@ -140,14 +140,7 @@ const ChildLoginModal: React.FC<ChildLoginModalProps> = ({ visible, onClose }) =
                   </TouchableOpacity>
                 </Animated.View>
 
-                <Animated.View entering={FadeIn.delay(1000)}>
-                  <TouchableOpacity style={styles.helpContainer}>
-                    <Text style={styles.helpText}>
-                      ¿Necesitas ayuda?
-                      <Text style={styles.helpLink}> Pregunta a tus papás</Text>
-                    </Text>
-                  </TouchableOpacity>
-                </Animated.View>
+                
               </View>
           </Animated.View>
         </KeyboardAvoidingView>
