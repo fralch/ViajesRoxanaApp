@@ -122,7 +122,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
   // Child information for display
   const childName = childData?.nombres || "Pequeño Explorador";
   const childAge = childData?.fecha_nacimiento ? 
-    new Date().getFullYear() - new Date(childData.fecha_nacimiento).getFullYear() : 8;
+    new Date().getFullYear() - new Date(childData.fecha_nacimiento).getFullYear() + 'años' : '';
   const childInitials = childName.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
   
   // Parent info for emergency purposes
@@ -210,7 +210,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
               <View style={styles.greetingContainer}>
                 <Text style={styles.greeting}>¡Hola {childName.split(' ')[0]}! 👋</Text>
                 <Text style={styles.subGreeting}>
-                  {childAge} años • ¡Listo para la aventura! 🌟
+                  {childAge}  • ¡Listo para la aventura! 🌟
                 </Text>
               </View>
             </View>
@@ -297,7 +297,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
         </View>
 
         {/* Emergency Contact Info */}
-        {childData?.nums_emergencia && childData.nums_emergencia.length > 0 && (
+        {/* {childData?.nums_emergencia && childData.nums_emergencia.length > 0 && (
           <Animated.View 
             entering={FadeInUp.delay(800).springify()}
             style={styles.emergencyCard}
@@ -310,7 +310,7 @@ const DashboardScreen = ({ navigation }: { navigation?: any }) => {
               {parentName} siempre está cuidándote ❤️
             </Text>
           </Animated.View>
-        )}
+        )} */}
 
         {/* Mi Ubicación - GPS Tracking */}
         <View style={styles.locationSection}>
