@@ -5,6 +5,7 @@ export * from './useNotifications';
 export * from './useLocation';
 export * from './useGPSTracking';
 export * from './useBackgroundLocationTracking';
+export * from './usePrivacyPolicy';
 
 export type { AuthUserData, AuthLoginCredentials } from './useAuth';
 export type { UserProfileData } from './useUserProfile';

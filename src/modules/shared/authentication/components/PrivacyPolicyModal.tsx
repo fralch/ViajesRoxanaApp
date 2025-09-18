@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { usePrivacyPolicy } from '../../../../shared/hooks/usePrivacyPolicy';
 
 const { height, width } = Dimensions.get('window');
 
@@ -55,7 +56,19 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
   onClose,
   onAccept,
 }) => {
+  const { acceptPrivacyPolicy } = usePrivacyPolicy();
   const [showDocumentsModal, setShowDocumentsModal] = useState(false);
+
+  const handleAccept = async () => {
+    try {
+      await acceptPrivacyPolicy();
+      onAccept();
+    } catch (error) {
+      console.error('Error al aceptar las políticas de privacidad:', error);
+      // Aún así cerramos el modal para no bloquear al usuario
+      onAccept();
+    }
+  };
 
   const handleReadMore = () => {
     setShowDocumentsModal(true);
@@ -137,12 +150,12 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({
               {/* Action Buttons */}
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
-                  style={styles.acceptButton}
-                  onPress={onAccept}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.acceptButtonText}>Aceptar</Text>
-                </TouchableOpacity>
+                style={styles.acceptButton}
+                onPress={handleAccept}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.acceptButtonText}>Aceptar</Text>
+              </TouchableOpacity>
 
                 <TouchableOpacity
                   style={styles.declineButton}

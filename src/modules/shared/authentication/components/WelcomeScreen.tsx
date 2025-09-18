@@ -17,6 +17,7 @@ import Animated, { FadeInDown, FadeInUp, FadeIn } from 'react-native-reanimated'
 import ParentLoginModal from './ParentLoginModal';
 import ChildLoginModal from './ChildLoginModal';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
+import { usePrivacyPolicy } from '../../../../shared/hooks/usePrivacyPolicy';
 
 const { height, width } = Dimensions.get('window');
 
@@ -89,11 +90,15 @@ const WelcomeScreen = () => {
   const [parentModalVisible, setParentModalVisible] = useState(false);
   const [childModalVisible, setChildModalVisible] = useState(false);
   const [privacyModalVisible, setPrivacyModalVisible] = useState(false);
+  
+  const { isAccepted, isLoading } = usePrivacyPolicy();
 
-  // Mostrar el modal de privacidad automáticamente al cargar el componente
+  // Mostrar el modal de privacidad automáticamente solo si no ha sido aceptado
   useEffect(() => {
-    setPrivacyModalVisible(true);
-  }, []);
+    if (!isLoading && !isAccepted) {
+      setPrivacyModalVisible(true);
+    }
+  }, [isLoading, isAccepted]);
 
   const handleParentLogin = () => {
     setParentModalVisible(true);
