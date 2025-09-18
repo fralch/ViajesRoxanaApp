@@ -53,6 +53,58 @@ const API_BASE_URL = 'https://grupoviajesroxana.com/api/v1';
 // Location service
 export class LocationService {
   /**
+   * Gets real-time location data optimized for Redis backend
+   * This method is optimized for frequent polling (every 20 seconds)
+   */
+  static async getRealTimeLocation(hijoId: string): Promise<ChildGeolocationResponse> {
+    try {
+      const response = await fetch(`https://grupoviajesroxana.com/api/v1/endpoint/geolocalizacion/hijo/location?hijo_id=${hijoId}&realtime=true&source=redis`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+        },
+      });
+
+      if (!response.ok) {
+        let errorMessage = `Error HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {
+          errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
+        }
+
+        if (response.status === 404) {
+          throw new Error(`No se encontraron datos de geolocalización en tiempo real para el hijo ID: ${hijoId}`);
+        }
+
+        throw new Error(errorMessage);
+      }
+
+      const data: ChildGeolocationResponse = await response.json();
+
+      if (!data.success) {
+        throw new Error('Error al obtener datos de geolocalización en tiempo real');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('LocationService.getRealTimeLocation error:', error);
+
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      throw new Error('Error de conexión en tiempo real. Verifica tu internet e intenta nuevamente.');
+    }
+  }
+
+  /**
    * Gets the last location for a specific child by document number
    */
   static async getLastLocation(docNumber: string): Promise<ChildGeolocationResponse> {

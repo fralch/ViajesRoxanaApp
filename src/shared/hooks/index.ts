@@ -4,6 +4,7 @@ export * from './useUserProfile';
 export * from './useNotifications';
 export * from './useLocation';
 export * from './useGPSTracking';
+export * from './useBackgroundLocationTracking';
 
 export type { AuthUserData, AuthLoginCredentials } from './useAuth';
 export type { UserProfileData } from './useUserProfile';
