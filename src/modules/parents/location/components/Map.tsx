@@ -146,7 +146,7 @@ export const Map: React.FC<MapProps> = ({
         try {
           setApiError(null);
           const apiResponse = await LocationService.getLastLocation(docNumber);
-          const transformedData = LocationService.transformLocationData(apiResponse);
+          const transformedData = LocationService.transformGeolocationData(apiResponse);
           setApiData(transformedData);
         } catch (err) {
           console.error('Error fetching location data for map:', err);
@@ -494,7 +494,7 @@ export const Map: React.FC<MapProps> = ({
                 try {
                   setApiError(null);
                   const apiResponse = await LocationService.getLastLocation(docNumber);
-                  const transformedData = LocationService.transformLocationData(apiResponse);
+                  const transformedData = LocationService.transformGeolocationData(apiResponse);
                   setApiData(transformedData);
                 } catch (err) {
                   setApiError(err instanceof Error ? err.message : 'Error desconocido');

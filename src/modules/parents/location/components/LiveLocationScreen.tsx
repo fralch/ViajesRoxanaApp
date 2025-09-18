@@ -24,7 +24,7 @@ const LiveLocationScreen = ({ navigation }: { navigation?: any }) => {
       }
       
       const apiResponse = await LocationService.getLastLocation(docNumber);
-      const transformedData = LocationService.transformLocationData(apiResponse);
+      const transformedData = LocationService.transformGeolocationData(apiResponse);
       setLocationData(transformedData);
       setLastUpdate(transformedData.lastUpdate);
     } catch (err) {
