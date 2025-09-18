@@ -569,50 +569,30 @@ export const Map: React.FC<MapProps> = ({
       {/* Label superpuesto en el mapa */}
       {activeTab === 'map' && (
         <Animated.View style={[styles.mapLabel, { opacity: labelOpacity }]}>
-          <LinearGradient colors={[COLORS.white, COLORS.background]} style={styles.labelGradient}>
-            <View style={styles.labelContent}>
-              <View style={styles.studentInfo}>
-                <View style={styles.studentNameContainer}>
-                  <View style={styles.avatarContainer}>
-                    <Ionicons name="person" size={18} color={COLORS.primary} />
-                  </View>
-                  <Text style={styles.studentName}>{studentName}</Text>
-                </View>
+          {/* Botones de acción */}
+          <View style={styles.labelActions}>
+            <TouchableOpacity
+              style={styles.labelActionButton}
+              onPress={handleGetDirections}
+              activeOpacity={0.85}
+            >
+              <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.labelButtonGradient}>
+                <Ionicons name="navigate" size={18} color="white" />
+                <Text style={styles.labelButtonText}>Direcciones</Text>
+              </LinearGradient>
+            </TouchableOpacity>
 
-                {cleanAddress && (
-                  <View style={styles.addressContainer}>
-                    <Ionicons name="location-outline" size={14} color={COLORS.textSecondary} />
-                    <Text style={styles.addressText}>{cleanAddress}</Text>
-                  </View>
-                )}
+            <TouchableOpacity
+              style={styles.labelActionButton}
+              onPress={handleShareLocation}
+              activeOpacity={0.85}
+            >
+              <View style={styles.labelSecondaryButton}>
+                <Ionicons name="share-outline" size={18} color={COLORS.primary} />
+                <Text style={styles.labelSecondaryButtonText}>Compartir</Text>
               </View>
-              
-              {/* Botones de acción */}
-              <View style={styles.labelActions}>
-                <TouchableOpacity
-                  style={styles.labelActionButton}
-                  onPress={handleGetDirections}
-                  activeOpacity={0.85}
-                >
-                  <LinearGradient colors={[COLORS.primary, COLORS.primaryDark]} style={styles.labelButtonGradient}>
-                    <Ionicons name="navigate" size={18} color="white" />
-                    <Text style={styles.labelButtonText}>Direcciones</Text>
-                  </LinearGradient>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.labelActionButton}
-                  onPress={handleShareLocation}
-                  activeOpacity={0.85}
-                >
-                  <View style={styles.labelSecondaryButton}>
-                    <Ionicons name="share-outline" size={18} color={COLORS.primary} />
-                    <Text style={styles.labelSecondaryButtonText}>Compartir</Text>
-                  </View>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </LinearGradient>
+            </TouchableOpacity>
+          </View>
         </Animated.View>
       )}
     </View>
@@ -640,17 +620,6 @@ const styles = StyleSheet.create({
     bottom: SPACING.large,
     left: SPACING.medium,
     right: SPACING.medium,
-    borderRadius: BORDER_RADIUS.large,
-    overflow: 'hidden',
-    elevation: 12,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  labelGradient: { width: '100%' },
-  labelContent: {
-    padding: SPACING.large,
   },
   studentInfo: { gap: SPACING.small },
   studentNameContainer: { flexDirection: 'row', alignItems: 'center', gap: SPACING.medium },
